@@ -5,31 +5,84 @@ using System.Threading;
 
 namespace Concoct
 {
-    class AcceptorContext
+
+    interface IRequestHandler
     {
-        public const int Shutdown = -1;
-        public HttpListener Listener;
+        void Process(HttpListenerContext context);
+    }
+
+    class HttpListenerAcceptor
+    {
+        readonly HttpListener listener = new HttpListener();
+        readonly HttpListenerAcceptorContext[] contexts = new HttpListenerAcceptorContext[1];
+        readonly WaitHandle[] backlog = new WaitHandle[1];
+        readonly IRequestHandler handler;
+
+        public HttpListenerAcceptor(int port, IRequestHandler handler) {
+            listener.Prefixes.Add(string.Format("http://*:{0}/", port));
+            this.handler = handler;
+            for(int i = 0; i != contexts.Length; ++i)
+                contexts[i] = new HttpListenerAcceptorContext {
+                    Listener = this,
+                    Backlog = backlog,
+                    Offset = i
+                };
+        }
+
+        public void Start() {
+            listener.Start();
+            for(int i = 0; i != contexts.Length; ++i)
+                contexts[i].Listen();
+        }
+
+        public void Stop() {
+            listener.Stop();
+            WaitHandle.WaitAll(backlog);
+        }
+
+        internal WaitHandle BeginGetContext(AsyncCallback callback, object state) {
+            return listener.BeginGetContext(callback, state).AsyncWaitHandle;
+        }
+
+        internal void EndGetContext(IAsyncResult asyncResult) {
+            handler.Process(listener.EndGetContext(asyncResult));
+        }
+    }
+
+    class HttpListenerAcceptorContext
+    {
+        public HttpListenerAcceptor Listener;
         public WaitHandle[] Backlog;
         public int Offset;
-        public Action<HttpListenerContext> OnRequest;
 
         static void BeginRequest(IAsyncResult async)
         {
-            var acceptor = (AcceptorContext)async.AsyncState;            
+            var acceptor = (HttpListenerAcceptorContext)async.AsyncState;            
             acceptor.DispatchRequest(async);
         }
 
         public void Listen()
         {
-            Backlog[Offset] = Listener.BeginGetContext(BeginRequest, this).AsyncWaitHandle;
+            Backlog[Offset] = Listener.BeginGetContext(BeginRequest, this);
         }
 
         void DispatchRequest(IAsyncResult async)
         {
-            if(Thread.VolatileRead(ref Offset) == Shutdown)
-                return;
             Listen();
-            OnRequest(Listener.EndGetContext(async));
+            Listener.EndGetContext(async);
+        }
+    }
+
+    class ThreadPoolRequestHandler : IRequestHandler
+    {
+        readonly WaitCallback process;
+
+        public ThreadPoolRequestHandler(WaitCallback process) {
+            this.process = process;
+        }
+
+        void IRequestHandler.Process(HttpListenerContext context) {
+            ThreadPool.QueueUserWorkItem(process, context);
         }
     }
 
@@ -37,41 +90,13 @@ namespace Concoct
     {
         static void Main(string[] args)
         {
-            var listener = new HttpListener();
-            listener.Prefixes.Add("http://*:8080/");
-            listener.Start();
+            var acceptor = new HttpListenerAcceptor(8080, new ThreadPoolRequestHandler(SendHello));
+            acceptor.Start();
             Console.WriteLine("Waiting for connections.");
 
-            var workers = new Thread[2];
-
-
-            var contexts = new AcceptorContext[4];
-            var backlog = new WaitHandle[contexts.Length];
-
-            ParameterizedThreadStart beginListening = x => {
-                    var n = (int[])x;
-                    for (var i = 0; i != n[0]; ++i){
-                        var offset = n[1] + i;
-                        var handler = new AcceptorContext
-                        {
-                            Listener = listener,
-                            Backlog = backlog,
-                            Offset = offset,
-                            OnRequest = request => ThreadPool.QueueUserWorkItem(SendHello, request)
-                        };
-                        handler.Listen();
-                        contexts[offset] = handler;
-                    }
-                };
-            beginListening(new[] {contexts.Length / 2, 0});
-            var worker = new Thread(beginListening);
-            worker.Start(new[] { contexts.Length / 2, contexts.Length / 2 });
 
             Console.ReadKey();
-            for (var i = 0; i != backlog.Length; ++i)
-                contexts[i].Offset = AcceptorContext.Shutdown;
-            listener.Stop();
-            WaitHandle.WaitAll(backlog);
+            acceptor.Stop();
         }
 
         static void SendHello(object obj)
