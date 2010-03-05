@@ -1,13 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Diagnostics;
 using System.IO;
 using System.Linq.Expressions;
 using System.Net;
+using System.Runtime.Remoting;
+using System.Text;
 using System.Threading;
 using System.Web;
+using System.Web.Compilation;
 using System.Web.Mvc;
 using System.Web.Routing;
+using System.Web.Hosting;
+using System.Reflection;
+using System.IO;
 
 namespace Concoct
 {
@@ -33,13 +40,18 @@ namespace Concoct
         readonly WaitHandle[] backlog;
         readonly IRequestHandler handler;
 
-        public HttpListenerAcceptor(IPEndPoint bindTo, IRequestHandler handler) {
-            listener.Prefixes.Add(string.Format("http://{0}:{1}/", PrefixFrom(bindTo.Address), bindTo.Port));
+        public HttpListenerAcceptor(IPEndPoint bindTo, IRequestHandler handler) : this(bindTo, string.Empty, handler)
+        { }
+
+        public HttpListenerAcceptor(IPEndPoint bindTo, string subfix, IRequestHandler handler)
+        {
+            listener.Prefixes.Add(string.Format("http://{0}:{1}{2}/", PrefixFrom(bindTo.Address), bindTo.Port, subfix));
             contexts = new HttpListenerAcceptorContext[1];
             backlog = new WaitHandle[contexts.Length];
             this.handler = handler;
-            for(int i = 0; i != contexts.Length; ++i)
-                contexts[i] = new HttpListenerAcceptorContext {
+            for (int i = 0; i != contexts.Length; ++i)
+                contexts[i] = new HttpListenerAcceptorContext
+                {
                     Listener = this,
                     Offset = i
                 };
@@ -93,6 +105,10 @@ namespace Concoct
         }
 
         public override string AppRelativeCurrentExecutionFilePath { get { return "~" + RawUrl; } }
+        public override Encoding ContentEncoding {
+            get { return request.ContentEncoding; }
+            set { throw new NotSupportedException(); }
+        }
         public override string PathInfo { get { return string.Empty; } }
         public override string RawUrl { get { return request.Url.AbsolutePath; } }
         public string HttpVersion { get { return request.ProtocolVersion.ToString(); } }
@@ -104,11 +120,12 @@ namespace Concoct
                 form = new NameValueCollection();
                 if (request.ContentType != "application/x-www-form-urlencoded")
                     return form;
-                var reader = new StreamReader(request.InputStream);
-                var data = reader.ReadToEnd();
-                foreach(var item in data.Split(new []{ '&'}, StringSplitOptions.RemoveEmptyEntries)){
+                var bytes = new byte[request.ContentLength64];
+                var bytesRead = request.InputStream.Read(bytes, 0, bytes.Length);
+                var data = HttpUtility.UrlDecode(bytes, 0, bytesRead, Encoding.UTF8);
+                foreach(var item in data.Split(new []{ '&' }, StringSplitOptions.RemoveEmptyEntries)){
                     var parts = item.Split('=');
-                    form.Add(parts[0], HttpUtility.UrlDecode(parts[1]));                                            
+                    form.Add(parts[0], parts[1]);
                 }
                 return form;
             }
@@ -122,22 +139,48 @@ namespace Concoct
     class HttpListenerResponseAdapter : HttpResponseBase
     {
         readonly HttpListenerResponse response;
-        private readonly TextWriter output;
+        TextWriter output;
+        
         public HttpListenerResponseAdapter(HttpListenerResponse response) {
             this.response = response;
+            this.response.ContentEncoding = Encoding.UTF8;
             this.output = new StreamWriter(response.OutputStream);
+            ContentType = "text/html";
         }
 
-        public override void Write(string s) {
-            output.Write(s);
+        public override int StatusCode {
+            get { return response.StatusCode; }
+            set { response.StatusCode = value; }
         }
 
-        public override void Flush() {
-            output.Flush();
+        public override Encoding ContentEncoding {
+            get { return response.ContentEncoding; }
+            set {
+                ResetOutput();
+                response.ContentEncoding = value;
+            }
         }
 
-        public override void End() {
-            output.Close();
+        public override string ContentType {
+            get { return response.ContentType; }
+            set { response.ContentType = value + "; charset=" + ContentEncoding.WebName; }
+        }
+
+        public override TextWriter Output {
+            get { return output ?? (output = new StreamWriter(response.OutputStream, response.ContentEncoding)); }
+        }
+
+        public override void Write(string s) { Output.Write(s); }
+
+        public override void Flush() { Output.Flush(); }
+
+        public override void End() { Output.Close(); }
+
+        void ResetOutput()
+        {
+            if(output != null)
+                output.Flush();
+            output = null;
         }
     }
 
@@ -262,7 +305,12 @@ namespace Concoct
             var data = RouteTable.Routes.GetRouteData(httpContext);
             var request = new RequestContext(httpContext, data);
             var handler = data.RouteHandler.GetHttpHandler(request);
-            handler.ProcessRequest(httpContext.AsHttpContext());
+            try {
+                handler.ProcessRequest(httpContext.AsHttpContext());
+            } catch(Exception e) {
+                httpContext.Response.StatusCode = 500;
+                httpContext.Response.Write(e.ToString());                
+            }
             httpContext.Response.End();
         }
     }
@@ -287,16 +335,24 @@ namespace Concoct
         {}
     }
 
-    class Program
+    public class Program : MarshalByRefObject
     {
         static void Main(string[] args)
         {
-            RouteTable.Routes.MapRoute("Default", "{controller}/{action}/{id}", new { controller = "Home", action = "Index", id=(string)null});
+            var host = new Program();
+            host.Start();
+        }
+
+        void Start()
+        {
+            RouteTable.Routes.MapRoute("Default", "{controller}/{action}", new { controller = "Deploy", action = "Index" });
+            ViewEngines.Engines.Clear();            
             var controllerFactory = new BasicControllerFactory();
-            controllerFactory.RegisterController("Home", typeof(Controllers.HomeController));
+            controllerFactory.RegisterController("Deploy", typeof(Controllers.DeployController));
             ControllerBuilder.Current.SetControllerFactory(controllerFactory);
             var acceptor = new HttpListenerAcceptor(
-                new IPEndPoint(IPAddress.Any, 8080), 
+                new IPEndPoint(IPAddress.Any, 80),
+                "/Deploy",
                 new MvcRequestHandler());
             acceptor.Start();
             Console.WriteLine("Waiting for connections.");
@@ -308,17 +364,45 @@ namespace Concoct
 
 namespace Concoct.Controllers
 {
-    public class HomeController : Controller
+    public class DeployController : Controller
     {
+        private static string status = "";
         [HttpGet]
         public string Index()
         {
-            return string.Format("<form method='POST' action='#'><input type='submit' name='id' value='Foo'/></form>");           
+            var doctype = "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">";
+            return doctype
+                + string.Format("<html><body><pre>" + status + "</pre><a href='.'>refresh</a><form method='POST' action='#'><input type='text' name='buildNumber'><input type='submit' name='id' value='Go!'/></form></body></html>");           
         }
         [HttpPost]
-        public string Index(string id)
+        public string Index(string buildNumber)
         {
-            return string.Format("Hello {0} World!", id ?? "Mvc");
+            status = string.Format("Deploying build:" + buildNumber);
+            Deploy(int.Parse(buildNumber));
+            return Index();
+        }
+
+        void Deploy(int buildNumber)
+        {
+            var commandLine = string.Format( "C:\\temp\\AutoDep\\install.bat http://cidb.dev.cint.com:3333/builds/Cint/{0}/Web.Cpx.Net.{0}.zip {0}",buildNumber);
+            var startInfo = new ProcessStartInfo("cmd",
+                string.Format("/C {0}", commandLine)){
+                RedirectStandardOutput = true, UseShellExecute = false,
+                RedirectStandardError = false, CreateNoWindow = true,
+                WorkingDirectory = "C:\\temp\\AutoDep\\"
+            };
+
+            var cmd = new Process();
+            cmd.EnableRaisingEvents = true;
+            cmd.OutputDataReceived += (_, output) =>
+                {
+                    Console.WriteLine(output.Data);
+                    status += Environment.NewLine + output.Data;
+                };
+            cmd.Exited += (__, exit) => status += Environment.NewLine + "Deployment finished with status code = " + cmd.ExitCode;
+            cmd.StartInfo = startInfo;
+            cmd.Start();
+            cmd.BeginOutputReadLine();
         }
     }
 }
