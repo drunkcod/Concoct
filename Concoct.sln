@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 10.00
 # Visual Studio 2008
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Concoct", "Concoct.csproj", "{DFCA252B-64BA-40CB-8CE1-C8750C4526C7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Concoct", "Source\Concoct.csproj", "{DFCA252B-64BA-40CB-8CE1-C8750C4526C7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

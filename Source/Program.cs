@@ -15,6 +15,8 @@ using System.Web.Routing;
 using System.Web.Hosting;
 using System.Reflection;
 using System.IO;
+using System.Linq;
+using System.Reflection.Emit;
 
 namespace Concoct
 {
@@ -331,78 +333,74 @@ namespace Concoct
             controllers.Add(name, builder);    
         }
 
+        public void Register(IEnumerable<Type> types)
+        {
+            foreach(var item in types.Where(x => typeof(IController).IsAssignableFrom(x)))
+                RegisterController(item.Name.Replace("Controller", string.Empty), item);
+        }
+
         public void ReleaseController(IController controller)
         {}
     }
 
-    public class Program : MarshalByRefObject
+    public interface IApplicationLifecycle
+    {
+        void Start();
+    }
+
+    public class Program
     {
         static void Main(string[] args)
         {
             var host = new Program();
-            host.Start();
+            var site = Assembly.LoadFrom(args[0]);
+
+            var types = site.GetTypes();
+
+            var applicationType = types.Where(x => typeof (HttpApplication).IsAssignableFrom(x)).FirstOrDefault();
+
+
+            var generated = AppDomain.CurrentDomain.DefineDynamicAssembly(new AssemblyName("Concoct.Generated"), AssemblyBuilderAccess.Run);
+            var module = generated.DefineDynamicModule("Main");
+            var appLife = module.DefineType("ApplicationLifecycle", 
+                TypeAttributes.NotPublic | TypeAttributes.Sealed,
+                applicationType,
+                new[] {typeof (IApplicationLifecycle)});
+
+            
+
+            var start = appLife.DefineMethod("Start", MethodAttributes.Private | MethodAttributes.Virtual);
+            var startIl = start.GetILGenerator();
+
+            var appStart = applicationType.GetMethod("Application_Start", BindingFlags.NonPublic | BindingFlags.Instance);
+            if(appStart != null) {
+                startIl.Emit(OpCodes.Ldarg_0);
+                startIl.Emit(OpCodes.Tailcall);
+                startIl.Emit(OpCodes.Call, appStart);                
+            }
+            else
+                startIl.Emit(OpCodes.Ret);
+          
+            appLife.DefineMethodOverride(start, typeof(IApplicationLifecycle).GetMethod("Start"));
+
+            var foo = (IApplicationLifecycle)appLife.CreateType().GetConstructor(Type.EmptyTypes).Invoke(null);
+            foo.Start();
+            var controllerFactory = new BasicControllerFactory();
+            controllerFactory.Register(types);
+            ControllerBuilder.Current.SetControllerFactory(controllerFactory);
+            host.Start(args[1]);
         }
 
-        void Start()
+        void Start(string vdir)
         {
-            RouteTable.Routes.MapRoute("Default", "{controller}/{action}", new { controller = "Deploy", action = "Index" });
-            ViewEngines.Engines.Clear();            
-            var controllerFactory = new BasicControllerFactory();
-            controllerFactory.RegisterController("Deploy", typeof(Controllers.DeployController));
-            ControllerBuilder.Current.SetControllerFactory(controllerFactory);
             var acceptor = new HttpListenerAcceptor(
                 new IPEndPoint(IPAddress.Any, 80),
-                "/Deploy",
+                vdir,
                 new MvcRequestHandler());
             acceptor.Start();
             Console.WriteLine("Waiting for connections.");
             Console.ReadKey();
             acceptor.Stop();
-        }
-    }
-}
-
-namespace Concoct.Controllers
-{
-    public class DeployController : Controller
-    {
-        private static string status = "";
-        [HttpGet]
-        public string Index()
-        {
-            var doctype = "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">";
-            return doctype
-                + string.Format("<html><body><pre>" + status + "</pre><a href='.'>refresh</a><form method='POST' action='#'><input type='text' name='buildNumber'><input type='submit' name='id' value='Go!'/></form></body></html>");           
-        }
-        [HttpPost]
-        public string Index(string buildNumber)
-        {
-            status = string.Format("Deploying build:" + buildNumber);
-            Deploy(int.Parse(buildNumber));
-            return Index();
-        }
-
-        void Deploy(int buildNumber)
-        {
-            var commandLine = string.Format( "C:\\temp\\AutoDep\\install.bat http://cidb.dev.cint.com:3333/builds/Cint/{0}/Web.Cpx.Net.{0}.zip {0}",buildNumber);
-            var startInfo = new ProcessStartInfo("cmd",
-                string.Format("/C {0}", commandLine)){
-                RedirectStandardOutput = true, UseShellExecute = false,
-                RedirectStandardError = false, CreateNoWindow = true,
-                WorkingDirectory = "C:\\temp\\AutoDep\\"
-            };
-
-            var cmd = new Process();
-            cmd.EnableRaisingEvents = true;
-            cmd.OutputDataReceived += (_, output) =>
-                {
-                    Console.WriteLine(output.Data);
-                    status += Environment.NewLine + output.Data;
-                };
-            cmd.Exited += (__, exit) => status += Environment.NewLine + "Deployment finished with status code = " + cmd.ExitCode;
-            cmd.StartInfo = startInfo;
-            cmd.Start();
-            cmd.BeginOutputReadLine();
         }
     }
 }
