@@ -359,27 +359,22 @@ namespace Concoct
 
             var applicationType = types.Where(x => typeof (HttpApplication).IsAssignableFrom(x)).FirstOrDefault();
 
-
             var generated = AppDomain.CurrentDomain.DefineDynamicAssembly(new AssemblyName("Concoct.Generated"), AssemblyBuilderAccess.Run);
             var module = generated.DefineDynamicModule("Main");
             var appLife = module.DefineType("ApplicationLifecycle", 
                 TypeAttributes.NotPublic | TypeAttributes.Sealed,
                 applicationType,
                 new[] {typeof (IApplicationLifecycle)});
-
-            
-
+           
             var start = appLife.DefineMethod("Start", MethodAttributes.Private | MethodAttributes.Virtual);
             var startIl = start.GetILGenerator();
 
             var appStart = applicationType.GetMethod("Application_Start", BindingFlags.NonPublic | BindingFlags.Instance);
             if(appStart != null) {
                 startIl.Emit(OpCodes.Ldarg_0);
-                startIl.Emit(OpCodes.Tailcall);
-                startIl.Emit(OpCodes.Call, appStart);                
+                startIl.Emit(OpCodes.Call, appStart);
             }
-            else
-                startIl.Emit(OpCodes.Ret);
+            startIl.Emit(OpCodes.Ret);
           
             appLife.DefineMethodOverride(start, typeof(IApplicationLifecycle).GetMethod("Start"));
 
