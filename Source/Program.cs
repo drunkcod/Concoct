@@ -31,7 +31,7 @@ namespace Concoct
 
             var types = site.GetTypes();
 
-            var httpApplicationType = types.Where(x => typeof (HttpApplication).IsAssignableFrom(x)).First();
+            var httpApplicationType = types.Where(x => x.IsTypeOf<HttpApplication>()).First();
 
             IApplication application = CreateApplicationProxyFromHttpApplication(httpApplicationType);
             application.Start();

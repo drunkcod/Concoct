@@ -24,7 +24,7 @@ namespace Concoct
         }
 
         public void Register(IEnumerable<Type> types) {
-            foreach (var item in types.Where(x => typeof(IController).IsAssignableFrom(x)))
+            foreach (var item in types.Where(x => x.IsTypeOf<IController>()))
                 RegisterController(item.Name.Replace("Controller", string.Empty), item);
         }
 

@@ -26,8 +26,7 @@ namespace Concoct
             var start = typeBuilder.DefineMethod(method.Name, MethodAttributes.Private | MethodAttributes.Virtual | MethodAttributes.Final);
             var il = start.GetILGenerator();
             var appStart = applicationType.GetMethod(eventName, BindingFlags.NonPublic | BindingFlags.Instance);
-            if (appStart != null)
-            {
+            if (appStart != null) {
                 il.Emit(OpCodes.Ldarg_0);
                 il.Emit(OpCodes.Tailcall);
                 il.Emit(OpCodes.Call, appStart);
