@@ -26,21 +26,27 @@ namespace Concoct
             : this(bindTo, string.Empty, handler)
         { }
 
-        public HttpListenerAcceptor(IPEndPoint bindTo, string subfix, IRequestHandler handler)
+        public HttpListenerAcceptor(IPEndPoint bindTo, string virtualDirectory, IRequestHandler handler)
         {
-            listener.Prefixes.Add(string.Format("http://{0}:{1}{2}/", PrefixFrom(bindTo.Address), bindTo.Port, subfix));
+            listener.Prefixes.Add(FormatPrefix(bindTo, virtualDirectory));
             contexts = new HttpListenerAcceptorContext[1];
             backlog = new WaitHandle[contexts.Length];
             this.handler = handler;
             for (int i = 0; i != contexts.Length; ++i)
-                contexts[i] = new HttpListenerAcceptorContext
-                                  {
-                                      Listener = this,
-                                      Offset = i
-                                  };
+                contexts[i] = new HttpListenerAcceptorContext {
+                    Listener = this,
+                    Offset = i
+                };
         }
 
-        static string PrefixFrom(IPAddress address)
+        private static string FormatPrefix(IPEndPoint bindTo, string virtualDirectory)
+        {
+            return string.Format("http://{0}:{1}{2}", HostFrom(bindTo.Address), bindTo.Port, FormatVirtualDirectory(virtualDirectory));
+        }
+
+        private static string FormatVirtualDirectory(string virtualDirectory) { return string.Format("/{0}/", virtualDirectory).Replace("//", "/"); }
+
+        static string HostFrom(IPAddress address)
         {
             if (address == IPAddress.Any)
                 return "*";
