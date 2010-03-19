@@ -63,7 +63,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BasciControllerFactoryTests.cs" />
+    <Compile Include="BasicControllerFactoryTests.cs" />
     <Compile Include="MissingControllerTests.cs" />
   </ItemGroup>
   <ItemGroup>
