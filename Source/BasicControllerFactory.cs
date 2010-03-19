@@ -7,12 +7,15 @@ using System.Web.Routing;
 
 namespace Concoct
 {
-    class BasicControllerFactory : IControllerFactory
+    public class BasicControllerFactory : IControllerFactory
     {
         readonly Dictionary<string, Func<IController>> controllers = new Dictionary<string, Func<IController>>();
 
         public IController CreateController(RequestContext requestContext, string controllerName) {
-            return controllers[controllerName]();
+            Func<IController> controller;
+            if (controllers.TryGetValue(controllerName, out controller))
+                return controller();
+            return new MissingController();
         }
 
         public void RegisterController(string name, Type type) {

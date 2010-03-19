@@ -5,7 +5,7 @@ using Concoct.Web;
 
 namespace Concoct
 {
-    class MvcRequestHandler : IRequestHandler
+    class MvcRequestHandler : IHttpListenerRequestHandler
     {
         public void Process(HttpListenerContext context)
         {

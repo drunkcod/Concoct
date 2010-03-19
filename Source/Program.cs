@@ -9,7 +9,7 @@ using System.Web.Mvc;
 
 namespace Concoct
 {
-    interface IRequestHandler
+    interface IHttpListenerRequestHandler
     {
         void Process(HttpListenerContext context);
     }
@@ -24,8 +24,7 @@ namespace Concoct
 
         static MethodInfo Method<T>(Expression<Action<T>> expression) { return (expression.Body as MethodCallExpression).Method; }
 
-        static void Main(string[] args)
-        {
+        static void Main(string[] args) {
             var host = new Program();
             var site = Assembly.LoadFrom(args[0]);
 
@@ -41,8 +40,7 @@ namespace Concoct
             host.Start(args[1]);
         }
 
-        private static IApplication CreateApplicationProxyFromHttpApplication(Type httpApplicationType)
-        {
+        private static IApplication CreateApplicationProxyFromHttpApplication(Type httpApplicationType) {
             var generated = AppDomain.CurrentDomain.DefineDynamicAssembly(new AssemblyName("Concoct.Generated"), AssemblyBuilderAccess.Run);
             var module = generated.DefineDynamicModule("Main");
             var proxy = ApplicationBuilder.CreateIn(module, httpApplicationType);
@@ -50,8 +48,7 @@ namespace Concoct
             return proxy.CreateType();
         }
 
-        void Start(string virtualDirectory)
-        {
+        void Start(string virtualDirectory) {
             var acceptor = new HttpListenerAcceptor(
                 new IPEndPoint(IPAddress.Any, 80),
                 virtualDirectory,

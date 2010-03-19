@@ -20,13 +20,13 @@ namespace Concoct
         readonly HttpListener listener = new HttpListener();
         readonly HttpListenerAcceptorContext[] contexts;
         readonly WaitHandle[] backlog;
-        readonly IRequestHandler handler;
+        readonly IHttpListenerRequestHandler handler;
 
-        public HttpListenerAcceptor(IPEndPoint bindTo, IRequestHandler handler)
+        public HttpListenerAcceptor(IPEndPoint bindTo, IHttpListenerRequestHandler handler)
             : this(bindTo, string.Empty, handler)
         { }
 
-        public HttpListenerAcceptor(IPEndPoint bindTo, string virtualDirectory, IRequestHandler handler)
+        public HttpListenerAcceptor(IPEndPoint bindTo, string virtualDirectory, IHttpListenerRequestHandler handler)
         {
             listener.Prefixes.Add(FormatPrefix(bindTo, virtualDirectory));
             contexts = new HttpListenerAcceptorContext[1];
