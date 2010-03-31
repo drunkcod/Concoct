@@ -9,13 +9,18 @@ namespace Concoct.Web
     class HttpListenerRequestAdapter : HttpRequestBase
     {
         readonly HttpListenerRequest request;
+        readonly string applicationPath;
         readonly Func<Uri,string> makeAppRelativePath;
         NameValueCollection form;
+        readonly NameValueCollection serverVariables = new NameValueCollection();
 
-        public HttpListenerRequestAdapter(HttpListenerRequest request, Func<Uri, string> makeAppRelativePath) {
+        public HttpListenerRequestAdapter(HttpListenerRequest request, string applicationPath, Func<Uri, string> makeAppRelativePath) {
             this.request = request;
+            this.applicationPath = applicationPath;
             this.makeAppRelativePath = makeAppRelativePath;
         }
+
+        public override string ApplicationPath { get { return applicationPath; } }
 
         public override string AppRelativeCurrentExecutionFilePath {
             get { return makeAppRelativePath(request.Url); }
@@ -48,6 +53,7 @@ namespace Concoct.Web
         public override NameValueCollection QueryString { get { return request.QueryString; } }
         public override HttpFileCollectionBase Files { get { return new EmptyHttpFileCollection(); } }
         public override NameValueCollection Headers { get { return request.Headers; } }
+        public override NameValueCollection ServerVariables { get { return serverVariables; } }
         public override void ValidateInput() { }        
     }
 }

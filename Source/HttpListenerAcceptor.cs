@@ -4,7 +4,7 @@ using System.Threading;
 
 namespace Concoct
 {
-    class HttpListenerAcceptor
+    public class HttpListenerAcceptor
     {
         class HttpListenerAcceptorContext
         {
@@ -21,6 +21,7 @@ namespace Concoct
         readonly HttpListenerAcceptorContext[] contexts;
         readonly WaitHandle[] backlog;
         readonly IHttpListenerRequestHandler handler;
+        volatile bool isStopping = false;
 
         public HttpListenerAcceptor(IPEndPoint bindTo, IHttpListenerRequestHandler handler)
             : this(bindTo, string.Empty, handler)
@@ -62,19 +63,23 @@ namespace Concoct
 
         public void Stop()
         {
+            isStopping = true;
             listener.Stop();
             WaitHandle.WaitAll(backlog);
         }
 
         void Dispatch(HttpListenerAcceptorContext context, IAsyncResult asyncResult)
         {
-            BeginGetContext(context);
-            handler.Process(listener.EndGetContext(asyncResult));
+            if(BeginGetContext(context))
+                handler.Process(listener.EndGetContext(asyncResult));
         }
 
-        void BeginGetContext(HttpListenerAcceptorContext context)
+        bool BeginGetContext(HttpListenerAcceptorContext context)
         {
+            if(isStopping)
+                return false;
             backlog[context.Offset] = listener.BeginGetContext(BeginRequest, context).AsyncWaitHandle;
+            return true;               
         }
 
         static void BeginRequest(IAsyncResult async)

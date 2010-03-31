@@ -102,7 +102,7 @@ namespace Concoct.Web
         readonly HttpResponseBase response;
 
         public HttpListenerContextAdapter(HttpListenerContext context, string virtualPath) {
-            this.request = new HttpListenerRequestAdapter(context.Request, MakeRelativeUriFunc(context.Request.Url, virtualPath));
+            this.request = new HttpListenerRequestAdapter(context.Request, virtualPath, MakeRelativeUriFunc(context.Request.Url, virtualPath));
             this.response = new HttpListenerResponseAdapter(context.Response);
         }
 

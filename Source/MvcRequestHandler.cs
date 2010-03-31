@@ -5,7 +5,7 @@ using Concoct.Web;
 
 namespace Concoct
 {
-    class MvcRequestHandler : IHttpListenerRequestHandler
+    public class MvcRequestHandler : IHttpListenerRequestHandler
     {
         readonly string virtualPath;
 

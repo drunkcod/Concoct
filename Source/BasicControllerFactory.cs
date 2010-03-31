@@ -18,12 +18,15 @@ namespace Concoct
             return new MissingController();
         }
 
+        public void RegisterController(string name, Func<IController> getController) {
+            controllers.Add(name, getController);
+        }
+
         public void RegisterController(string name, Type type) {
-            var builder = (Func<IController>)Expression.Lambda(
+            RegisterController(name, (Func<IController>)Expression.Lambda(
                 typeof(Func<IController>),
                 Expression.New(type))
-            .Compile();
-            controllers.Add(name, builder);
+                    .Compile());
         }
 
         public void Register(IEnumerable<Type> types) {

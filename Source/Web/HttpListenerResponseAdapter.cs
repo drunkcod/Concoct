@@ -35,8 +35,19 @@ namespace Concoct.Web
             set { response.ContentType = value + "; charset=" + ContentEncoding.WebName; }
         }
 
-        public override TextWriter Output {
+        public override string RedirectLocation {
+            get { return response.RedirectLocation; }
+            set { response.RedirectLocation = value; }
+        }
+
+        public override TextWriter Output
+        {
             get { return output ?? (output = new StreamWriter(response.OutputStream, response.ContentEncoding)); }
+        }
+
+        public override string ApplyAppPathModifier(string virtualPath)
+        {
+            return virtualPath;
         }
 
         public override void Write(string s) { Output.Write(s); }

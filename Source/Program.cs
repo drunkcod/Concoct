@@ -9,7 +9,7 @@ using System.Web.Mvc;
 
 namespace Concoct
 {
-    interface IHttpListenerRequestHandler
+    public interface IHttpListenerRequestHandler
     {
         void Process(HttpListenerContext context);
     }
