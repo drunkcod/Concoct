@@ -48,11 +48,11 @@ namespace Concoct
             return proxy.CreateType();
         }
 
-        void Start(string virtualDirectory) {
+        void Start(string virtualPath) {
             var acceptor = new HttpListenerAcceptor(
                 new IPEndPoint(IPAddress.Any, 80),
-                virtualDirectory,
-                new MvcRequestHandler());
+                virtualPath,
+                new MvcRequestHandler(virtualPath));
             acceptor.Start();
             Console.WriteLine("Waiting for connections.");
             Console.ReadKey();

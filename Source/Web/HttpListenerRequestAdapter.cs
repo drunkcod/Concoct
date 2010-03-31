@@ -9,13 +9,17 @@ namespace Concoct.Web
     class HttpListenerRequestAdapter : HttpRequestBase
     {
         readonly HttpListenerRequest request;
-        private NameValueCollection form;
+        readonly Func<Uri,string> makeAppRelativePath;
+        NameValueCollection form;
 
-        public HttpListenerRequestAdapter(HttpListenerRequest request) {
+        public HttpListenerRequestAdapter(HttpListenerRequest request, Func<Uri, string> makeAppRelativePath) {
             this.request = request;
+            this.makeAppRelativePath = makeAppRelativePath;
         }
 
-        public override string AppRelativeCurrentExecutionFilePath { get { return "~" + RawUrl; } }
+        public override string AppRelativeCurrentExecutionFilePath {
+            get { return makeAppRelativePath(request.Url); }
+        }
         public override Encoding ContentEncoding {
             get { return request.ContentEncoding; }
             set { throw new NotSupportedException(); }

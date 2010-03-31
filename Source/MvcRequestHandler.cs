@@ -7,8 +7,13 @@ namespace Concoct
 {
     class MvcRequestHandler : IHttpListenerRequestHandler
     {
+        readonly string virtualPath;
+
+        public MvcRequestHandler(string virtualPath) {
+            this.virtualPath = virtualPath;                
+        }
         public void Process(HttpListenerContext context) {
-            var httpContext = new HttpListenerContextAdapter(context);
+            var httpContext = new HttpListenerContextAdapter(context, virtualPath);
             try {
                 var data = RouteTable.Routes.GetRouteData(httpContext);
                 var request = new RequestContext(httpContext, data);

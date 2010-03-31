@@ -101,8 +101,8 @@ namespace Concoct.Web
         readonly HttpListenerRequestAdapter request;
         readonly HttpResponseBase response;
 
-        public HttpListenerContextAdapter(HttpListenerContext context) {
-            this.request = new HttpListenerRequestAdapter(context.Request);
+        public HttpListenerContextAdapter(HttpListenerContext context, string virtualPath) {
+            this.request = new HttpListenerRequestAdapter(context.Request, MakeRelativeUriFunc(context.Request.Url, virtualPath));
             this.response = new HttpListenerResponseAdapter(context.Response);
         }
 
@@ -114,6 +114,11 @@ namespace Concoct.Web
         {
             var worker = new HttpListenerWorkerRequest(this);
             return new HttpContext(worker);
+        }
+
+        static Func<Uri,string> MakeRelativeUriFunc(Uri request, string virtualPath){
+            var baseUri = new Uri(string.Format("{0}://{1}{2}/", request.Scheme, request.Host, virtualPath));
+            return uri => "~/" + baseUri.MakeRelativeUri(uri);
         }
     }
 }
