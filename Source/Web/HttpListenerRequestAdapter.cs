@@ -20,6 +20,7 @@ namespace Concoct.Web
             this.makeAppRelativePath = makeAppRelativePath;
         }
 
+        public override string[] AcceptTypes { get { return request.AcceptTypes; } }
         public override string ApplicationPath { get { return applicationPath; } }
 
         public override string AppRelativeCurrentExecutionFilePath {
@@ -50,6 +51,7 @@ namespace Concoct.Web
                 return form;
             }
         }
+        public override Uri Url { get {return request.Url; } }
         public override NameValueCollection QueryString { get { return request.QueryString; } }
         public override HttpFileCollectionBase Files { get { return new EmptyHttpFileCollection(); } }
         public override NameValueCollection Headers { get { return request.Headers; } }
