@@ -63,10 +63,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BasicControllerFactoryTests.cs" />
-    <Compile Include="MissingControllerTests.cs" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\Source\Concoct.csproj">
       <Project>{DFCA252B-64BA-40CB-8CE1-C8750C4526C7}</Project>
       <Name>Concoct</Name>

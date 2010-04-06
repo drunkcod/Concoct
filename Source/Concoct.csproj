@@ -56,11 +56,13 @@
       <Private>False</Private>
     </Reference>
     <Reference Include="System.Xml" />
+    <Reference Include="Xlnt.Stuff, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\Xlnt.Stuff\Build\Xlnt.Stuff.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ApplicationBuilder.cs" />
-    <Compile Include="BasicControllerFactory.cs" />
-    <Compile Include="MissingController.cs" />
     <Compile Include="MvcRequestHandler.cs" />
     <Compile Include="HttpListenerAcceptor.cs" />
     <Compile Include="TypeExtensions.cs" />
