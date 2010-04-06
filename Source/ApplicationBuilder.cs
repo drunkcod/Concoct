@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Reflection;
 using System.Reflection.Emit;
+using System.Linq.Expressions;
 
 namespace Concoct
 {
@@ -22,7 +23,8 @@ namespace Concoct
             this.typeBuilder = typeBuilder;
         }
 
-        public void DynamicEventWireUp(MethodInfo method, string eventName) {
+        public void DynamicEventWireUp(Expression<Action<IApplication>> expression, string eventName) {
+            var method = Method(expression);
             var start = typeBuilder.DefineMethod(method.Name, MethodAttributes.Private | MethodAttributes.Virtual | MethodAttributes.Final);
             var il = start.GetILGenerator();
             var appStart = applicationType.GetMethod(eventName, BindingFlags.NonPublic | BindingFlags.Instance);
@@ -38,5 +40,7 @@ namespace Concoct
         public IApplication CreateType() {
             return (IApplication)typeBuilder.CreateType().GetConstructor(Type.EmptyTypes).Invoke(null);
         }
+
+        static MethodInfo Method<T>(Expression<Action<T>> expression) { return (expression.Body as MethodCallExpression).Method; }
     }
 }

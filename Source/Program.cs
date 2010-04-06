@@ -6,6 +6,8 @@ using System.Reflection;
 using System.Reflection.Emit;
 using System.Web;
 using System.Web.Mvc;
+using Xlnt.Stuff;
+using Xlnt.Web.Mvc;
 
 namespace Concoct
 {
@@ -21,42 +23,32 @@ namespace Concoct
 
     public class Program
     {
-
-        static MethodInfo Method<T>(Expression<Action<T>> expression) { return (expression.Body as MethodCallExpression).Method; }
-
         static void Main(string[] args) {
-            var host = new Program();
             var site = Assembly.LoadFrom(args[0]);
 
             var types = site.GetTypes();
-
             var httpApplicationType = types.Where(x => x.IsTypeOf<HttpApplication>()).First();
 
-            IApplication application = CreateApplicationProxyFromHttpApplication(httpApplicationType);
+            var application = CreateApplicationProxy(httpApplicationType);
             application.Start();
+            
             var controllerFactory = new BasicControllerFactory();
             controllerFactory.Register(types);
             ControllerBuilder.Current.SetControllerFactory(controllerFactory);
-            host.Start(args[1]);
+
+            var host = MvcHost.Create(new IPEndPoint(IPAddress.Any, 80), args[1]);
+            host.Start();
+            Console.WriteLine("Listening for connections.");
+            Console.ReadKey();
+            host.Stop();
         }
 
-        private static IApplication CreateApplicationProxyFromHttpApplication(Type httpApplicationType) {
+        private static IApplication CreateApplicationProxy(Type httpApplicationType) {
             var generated = AppDomain.CurrentDomain.DefineDynamicAssembly(new AssemblyName("Concoct.Generated"), AssemblyBuilderAccess.Run);
             var module = generated.DefineDynamicModule("Main");
             var proxy = ApplicationBuilder.CreateIn(module, httpApplicationType);
-            proxy.DynamicEventWireUp(Method<IApplication>(x => x.Start()), "Application_Start");
+            proxy.DynamicEventWireUp(x => x.Start(), "Application_Start");
             return proxy.CreateType();
-        }
-
-        void Start(string virtualPath) {
-            var acceptor = new HttpListenerAcceptor(
-                new IPEndPoint(IPAddress.Any, 80),
-                virtualPath,
-                new MvcRequestHandler(virtualPath));
-            acceptor.Start();
-            Console.WriteLine("Waiting for connections.");
-            Console.ReadKey();
-            acceptor.Stop();
         }
     }
 }

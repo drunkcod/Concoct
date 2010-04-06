@@ -40,32 +40,30 @@ namespace Concoct
                 };
         }
 
-        private static string FormatPrefix(IPEndPoint bindTo, string virtualDirectory)
+        public void Start() {
+            listener.Start();
+            for(int i = 0; i != contexts.Length; ++i)
+                BeginGetContext(contexts[i]);
+        }
+
+        public void Stop() {
+            isStopping = true;
+            listener.Stop();
+            WaitHandle.WaitAll(backlog);
+        }
+
+        static string FormatPrefix(IPEndPoint bindTo, string virtualDirectory)
         {
             return string.Format("http://{0}:{1}{2}", HostFrom(bindTo.Address), bindTo.Port, FormatVirtualDirectory(virtualDirectory));
         }
 
-        private static string FormatVirtualDirectory(string virtualDirectory) { return string.Format("/{0}/", virtualDirectory).Replace("//", "/"); }
+        static string FormatVirtualDirectory(string virtualDirectory) { return string.Format("/{0}/", virtualDirectory).Replace("//", "/"); }
 
         static string HostFrom(IPAddress address)
         {
             if (address == IPAddress.Any)
                 return "*";
             return address.ToString();
-        }
-
-        public void Start()
-        {
-            listener.Start();
-            for (int i = 0; i != contexts.Length; ++i)
-                BeginGetContext(contexts[i]);
-        }
-
-        public void Stop()
-        {
-            isStopping = true;
-            listener.Stop();
-            WaitHandle.WaitAll(backlog);
         }
 
         void Dispatch(HttpListenerAcceptorContext context, IAsyncResult asyncResult)
