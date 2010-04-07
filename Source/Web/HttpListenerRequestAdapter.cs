@@ -34,6 +34,12 @@ namespace Concoct.Web
         public override string RawUrl { get { return request.Url.AbsolutePath; } }
         public string HttpVersion { get { return request.ProtocolVersion.ToString(); } }
         public override string HttpMethod { get { return request.HttpMethod; } }
+        public override string ContentType {
+            get { return request.ContentType; }
+            set { throw new NotSupportedException(); }
+        }
+        public override System.IO.Stream InputStream { get { return request.InputStream; } }
+
         public override NameValueCollection Form { 
             get {
                 if(form != null)

@@ -6,13 +6,17 @@ namespace Concoct
 {
     public class HttpListenerAcceptor
     {
-        class HttpListenerAcceptorContext
+        struct HttpListenerAcceptorContext
         {
             public HttpListenerAcceptor Listener;
             public int Offset;
 
-            public void BeginDispatch(IAsyncResult async)
-            {
+            public HttpListenerAcceptorContext(HttpListenerAcceptor listener, int offset) {
+                Listener = listener;
+                Offset = offset;
+            }
+
+            public void BeginDispatch(IAsyncResult async) {
                 Listener.Dispatch(this, async);
             }
         }
@@ -21,7 +25,7 @@ namespace Concoct
         readonly HttpListenerAcceptorContext[] contexts;
         readonly WaitHandle[] backlog;
         readonly IHttpListenerRequestHandler handler;
-        volatile bool isStopping = false;
+        volatile bool isStopping;
 
         public HttpListenerAcceptor(IPEndPoint bindTo, IHttpListenerRequestHandler handler)
             : this(bindTo, string.Empty, handler)
@@ -34,10 +38,7 @@ namespace Concoct
             backlog = new WaitHandle[contexts.Length];
             this.handler = handler;
             for (int i = 0; i != contexts.Length; ++i)
-                contexts[i] = new HttpListenerAcceptorContext {
-                    Listener = this,
-                    Offset = i
-                };
+                contexts[i] = new HttpListenerAcceptorContext(this, i);
         }
 
         public void Start() {
