@@ -8,6 +8,63 @@ using System.Linq.Expressions;
 
 namespace Concoct
 {
+    class TypeMixer
+    {
+        readonly Type targetType;
+        readonly TypeBuilder type;
+        readonly FieldBuilder targetField;
+
+        public TypeMixer(Type targetType, TypeBuilder type) {
+            this.targetType = targetType;
+            this.type = type;
+            this.targetField = type.DefineField("$", targetType, FieldAttributes.InitOnly | FieldAttributes.Private);
+        }
+
+        public ConstructorInfo DefineConstructor()
+        {
+            var ctorParameters = new[] { targetType };
+            var ctor = type.DefineConstructor(MethodAttributes.Public, CallingConventions.HasThis, ctorParameters);
+            var il = ctor.GetILGenerator();
+            il.Emit(OpCodes.Ldarg_0);
+            il.Emit(OpCodes.Ldarg_1);
+            il.Emit(OpCodes.Stfld, targetField);
+            il.Emit(OpCodes.Ret);
+
+            return type.CreateType().GetConstructor(ctorParameters);
+        }
+
+        public void OverrideMatchingMethods(IEnumerable<MethodInfo> methodsToMix)
+        {
+            foreach (var wantedMethod in methodsToMix)
+            {
+                foreach (var targetMethod in targetType.GetMethods())
+                {
+                    if (CantImplement(targetMethod, wantedMethod))
+                        continue;
+                    DefineOverride(wantedMethod, targetMethod);
+                }
+            }
+        }
+
+        private static bool CantImplement(MethodInfo targetMethod, MethodInfo wantedMethod) {
+            return targetMethod.Name != wantedMethod.Name || targetMethod.ReturnType != wantedMethod.ReturnType;
+        }
+
+        void DefineOverride(MethodInfo wantedMethod, MethodInfo targetMethod)
+        {
+            var impl = type.DefineMethod(wantedMethod.Name,
+                MethodAttributes.HideBySig | MethodAttributes.Virtual | (wantedMethod.Attributes & MethodAttributes.MemberAccessMask),
+                wantedMethod.ReturnType,
+                wantedMethod.GetParameters().Select(x => x.ParameterType).ToArray());
+            var il = impl.GetILGenerator();
+            il.Emit(OpCodes.Ldarg_0);
+            il.Emit(OpCodes.Ldfld, targetField);
+            il.Emit(OpCodes.Tailcall);
+            il.Emit(OpCodes.Callvirt, targetMethod);
+            il.Emit(OpCodes.Ret);
+        }
+    }
+
     public static class TypeMixer<TWanted>
     {
         static readonly Dictionary<Type, Func<object, TWanted>> constructorCache = new Dictionary<Type, Func<object, TWanted>>();
@@ -26,46 +83,26 @@ namespace Concoct
         static Func<object, TWanted> CreateConstructor(Type targetType) {
             var proxies = AppDomain.CurrentDomain.DefineDynamicAssembly(Assembly.GetExecutingAssembly().GetName(), AssemblyBuilderAccess.Run);
             var module = proxies.DefineDynamicModule("Mixers");
-            var type = DefineType(module, targetType);
 
-            var targetField = type.DefineField("$0", targetType, FieldAttributes.InitOnly | FieldAttributes.Private);
+            var mixer = new TypeMixer(targetType, DefineType(module, targetType));
+            mixer.OverrideMatchingMethods(MethodsToMix());
 
-            var ctor = type.DefineConstructor(MethodAttributes.Public, CallingConventions.HasThis, new[] { targetType });
-            var il = ctor.GetILGenerator();
-            il.Emit(OpCodes.Ldarg_0);
-            il.Emit(OpCodes.Ldarg_1);
-            il.Emit(OpCodes.Stfld, targetField);
-            il.Emit(OpCodes.Ret);
-            foreach (var wantedMethod in typeof(TWanted).GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic))
-            {
-                if (!wantedMethod.IsVirtual || wantedMethod.DeclaringType.Equals(typeof(object)))
-                    continue;
-                foreach (var targetMethod in targetType.GetMethods())
-                {
-                    if (targetMethod.Name != wantedMethod.Name || targetMethod.ReturnType != wantedMethod.ReturnType)
-                        continue;
-                    Console.WriteLine("Mixing {0}", targetMethod.Name);
-                    var impl = type.DefineMethod(wantedMethod.Name,
-                        MethodAttributes.HideBySig | MethodAttributes.Virtual | (wantedMethod.Attributes & MethodAttributes.MemberAccessMask),
-                        wantedMethod.ReturnType,
-                        wantedMethod.GetParameters().Select(x => x.ParameterType).ToArray());
-                    il = impl.GetILGenerator();
-                    il.Emit(OpCodes.Ldarg_0);
-                    il.Emit(OpCodes.Ldfld, targetField);
-                    il.Emit(OpCodes.Tailcall);
-                    il.Emit(OpCodes.Callvirt, targetMethod);
-                    il.Emit(OpCodes.Ret);
-                }
-            }
+            return CreateLambda(targetType, mixer.DefineConstructor());
+        }
 
-            var baked = type.CreateType();
+        private static Func<object, TWanted> CreateLambda(Type targetType, ConstructorInfo constructor) {
             var input = Expression.Parameter(typeof(object), "target");
-            var body = Expression.New(baked.GetConstructor(new []{ targetType }), Expression.Convert(input, targetType));
-            return constructorCache[targetType] = Expression.Lambda<Func<object, TWanted>>(body, input).Compile(); ;
+            var body = Expression.New(constructor, Expression.Convert(input, targetType));
+            return constructorCache[targetType] = Expression.Lambda<Func<object, TWanted>>(body, input).Compile();
         }
 
         static TypeBuilder DefineType(ModuleBuilder module, Type targetType) {
             return module.DefineType(targetType.FullName + "Mixer", TypeAttributes.Class, typeof(TWanted));
+        }
+
+        static IEnumerable<MethodInfo> MethodsToMix() {
+            return typeof(TWanted).GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+                .Where(x => x.IsVirtual && x.DeclaringType != typeof(object));
         }
     }
 }
