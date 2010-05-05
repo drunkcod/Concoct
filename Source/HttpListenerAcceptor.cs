@@ -78,7 +78,7 @@ namespace Concoct
             if(isStopping)
                 return false;
             backlog[context.Offset] = listener.BeginGetContext(BeginRequest, context).AsyncWaitHandle;
-            return true;               
+            return true;
         }
 
         static void BeginRequest(IAsyncResult async)

@@ -10,7 +10,7 @@ namespace Concoct
         readonly string virtualPath;
 
         public MvcRequestHandler(string virtualPath) {
-            this.virtualPath = virtualPath;                
+            this.virtualPath = virtualPath;
         }
         public void Process(HttpListenerContext context) {
             var httpContext = new HttpListenerContextAdapter(context, virtualPath);

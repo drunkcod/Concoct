@@ -9,7 +9,7 @@ namespace Concoct.Web
     {
         readonly HttpListenerResponse response;
         TextWriter output;
-        
+
         public HttpListenerResponseAdapter(HttpListenerResponse response) {
             this.response = response;
             this.response.ContentEncoding = Encoding.UTF8;
@@ -53,8 +53,8 @@ namespace Concoct.Web
 
         public override void Flush() { Output.Flush(); }
 
-        public override void End() { 
-            Output.Close(); 
+        public override void End() {
+            Output.Close();
             response.Close();
         }
 

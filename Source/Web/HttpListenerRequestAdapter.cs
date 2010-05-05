@@ -40,7 +40,7 @@ namespace Concoct.Web
         }
         public override System.IO.Stream InputStream { get { return request.InputStream; } }
 
-        public override NameValueCollection Form { 
+        public override NameValueCollection Form {
             get {
                 if(form != null)
                     return form;
@@ -62,6 +62,6 @@ namespace Concoct.Web
         public override HttpFileCollectionBase Files { get { return new EmptyHttpFileCollection(); } }
         public override NameValueCollection Headers { get { return request.Headers; } }
         public override NameValueCollection ServerVariables { get { return serverVariables; } }
-        public override void ValidateInput() { }        
+        public override void ValidateInput() { }
     }
 }

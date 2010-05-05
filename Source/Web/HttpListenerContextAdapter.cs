@@ -97,7 +97,7 @@ namespace Concoct.Web
                 context.Response.Write(string.Format("{0}: {1}\r\n", name, value));
             }
         }
-        
+
         readonly HttpListenerRequestAdapter request;
         readonly HttpResponseBase response;
 

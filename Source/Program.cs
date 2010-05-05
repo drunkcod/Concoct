@@ -26,7 +26,7 @@ namespace Concoct
 
             var types = site.GetTypes();
             var httpApplicationType = types.Where(x => x.IsTypeOf<HttpApplication>()).First();
-          
+
             var host = MvcHost.Create(new IPEndPoint(IPAddress.Any, 80), args[1], httpApplicationType);
             host.Starting += (_, e) => {
                 var controllerFactory = new BasicControllerFactory();
