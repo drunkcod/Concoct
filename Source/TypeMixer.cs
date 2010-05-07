@@ -8,20 +8,37 @@ using System.Linq.Expressions;
 
 namespace Concoct
 {
+    [AttributeUsage(AttributeTargets.Field, AllowMultiple = false)]
+    public class MixerTargetAttribute : Attribute {}
+
     class TypeMixer
     {
         readonly Type targetType;
         readonly TypeBuilder type;
-        readonly FieldBuilder targetField;
+        readonly FieldInfo targetField;
 
         public TypeMixer(Type targetType, TypeBuilder type) {
             this.targetType = targetType;
             this.type = type;
-            this.targetField = type.DefineField("$", targetType, FieldAttributes.InitOnly | FieldAttributes.Private);
+            this.targetField = GetTargetField(targetType, type);
         }
 
-        public ConstructorInfo DefineConstructor()
-        {
+        FieldInfo GetTargetField(Type targetType, TypeBuilder type) {
+            var existingField = FindTargetField(type.BaseType, targetType);
+            if(existingField != null)
+                return existingField;
+            return type.DefineField("$", targetType, FieldAttributes.InitOnly | FieldAttributes.Private);
+        }
+
+        FieldInfo FindTargetField(Type baseType, Type targetType){
+            var candidateFields = baseType.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic).Where(x => x.FieldType == targetType);
+            foreach (var item in candidateFields)
+                if (item.GetCustomAttributes(typeof(MixerTargetAttribute), true).Length != 0)
+                    return item;
+            return null;
+        }
+
+        public ConstructorInfo DefineConstructor() {
             var ctorParameters = new[] { targetType };
             var ctor = type.DefineConstructor(MethodAttributes.Public, CallingConventions.HasThis, ctorParameters);
             var il = ctor.GetILGenerator();
@@ -33,12 +50,9 @@ namespace Concoct
             return type.CreateType().GetConstructor(ctorParameters);
         }
 
-        public void OverrideMatchingMethods(IEnumerable<MethodInfo> methodsToMix)
-        {
-            foreach (var wantedMethod in methodsToMix)
-            {
-                foreach (var targetMethod in targetType.GetMethods())
-                {
+        public void OverrideMatchingMethods(IEnumerable<MethodInfo> methodsToMix) {
+            foreach (var wantedMethod in methodsToMix) {
+                foreach (var targetMethod in targetType.GetMethods()) {
                     if (CantImplement(targetMethod, wantedMethod))
                         continue;
                     DefineOverride(wantedMethod, targetMethod);
