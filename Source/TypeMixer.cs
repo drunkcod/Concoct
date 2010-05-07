@@ -31,11 +31,13 @@ namespace Concoct
         }
 
         FieldInfo FindTargetField(Type baseType, Type targetType){
-            var candidateFields = baseType.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic).Where(x => x.FieldType == targetType);
-            foreach (var item in candidateFields)
-                if (item.GetCustomAttributes(typeof(MixerTargetAttribute), true).Length != 0)
-                    return item;
-            return null;
+            return baseType.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+                .FirstOrDefault(TargetField(targetType));
+        }
+
+        static Func<FieldInfo, bool> TargetField(Type targetType)
+        {
+            return x => x.FieldType == targetType && x.GetCustomAttributes(typeof(MixerTargetAttribute), true).Length != 0;
         }
 
         public ConstructorInfo DefineConstructor() {

@@ -33,7 +33,7 @@ namespace Concoct
         public abstract class FooImpl
         {
             [MixerTarget]
-            protected HalfFoo inner;
+            protected readonly HalfFoo inner;
 
             public HalfFoo Inner { get { return inner; } }
 
