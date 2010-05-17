@@ -14,11 +14,6 @@ namespace Concoct
         void Process(HttpListenerContext context);
     }
 
-    public interface IApplication
-    {
-        void Start();
-    }
-
     public class Program
     {
         static void Main(string[] args) {

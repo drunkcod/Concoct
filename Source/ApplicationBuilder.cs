@@ -14,7 +14,7 @@ namespace Concoct
             var typeBuilder = module.DefineType("ApplicationProxyFor" + applicationType.Name,
                                         TypeAttributes.NotPublic | TypeAttributes.Sealed | TypeAttributes.Class,
                                         applicationType,
-                                        new[] { typeof(IApplication) });
+                                        new[] { typeof(IConcoctApplication) });
             return new ApplicationBuilder(applicationType, typeBuilder);
         }
 
@@ -23,11 +23,11 @@ namespace Concoct
             this.typeBuilder = typeBuilder;
         }
 
-        public void DynamicEventWireUp(Expression<Action<IApplication>> expression, string eventName) {
+        public void DynamicEventWireUp(Expression<Action<IConcoctApplication>> expression, string eventName) {
             var method = Method(expression);
             var start = typeBuilder.DefineMethod(method.Name, MethodAttributes.Private | MethodAttributes.Virtual | MethodAttributes.Final);
             var il = start.GetILGenerator();
-            var appStart = applicationType.GetMethod(eventName, BindingFlags.NonPublic | BindingFlags.Instance);
+            var appStart = applicationType.GetMethod(eventName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
             if (appStart != null) {
                 il.Emit(OpCodes.Ldarg_0);
                 il.Emit(OpCodes.Tailcall);
@@ -37,8 +37,8 @@ namespace Concoct
             typeBuilder.DefineMethodOverride(start, method);
         }
 
-        public IApplication CreateType() {
-            return (IApplication)typeBuilder.CreateType().GetConstructor(Type.EmptyTypes).Invoke(null);
+        public IConcoctApplication CreateType() {
+            return (IConcoctApplication)typeBuilder.CreateType().GetConstructor(Type.EmptyTypes).Invoke(null);
         }
 
         static MethodInfo Method<T>(Expression<Action<T>> expression) { return (expression.Body as MethodCallExpression).Method; }

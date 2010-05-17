@@ -7,13 +7,15 @@ namespace Concoct
 {
     public class MvcHost
     {
-        class NullApplication : IApplication
+        const string ProxiesAssemblyName = "Concoct.Proxies";
+
+        class NullApplication : IConcoctApplication
         {
             public void Start() { }
         }
 
         readonly HttpListenerAcceptor acceptor;
-        readonly IApplication application;
+        readonly IConcoctApplication application;
 
         public static MvcHost Create(IPEndPoint bindTo, string virtualPath) {
             return Create(bindTo, virtualPath, new NullApplication());
@@ -23,7 +25,7 @@ namespace Concoct
             return Create(bindTo, virtualPath, CreateApplicationProxy(applicationType));
         }
 
-        static MvcHost Create(IPEndPoint bindTo, string virtualPath, IApplication application) {
+        static MvcHost Create(IPEndPoint bindTo, string virtualPath, IConcoctApplication application) {
             return new MvcHost(new HttpListenerAcceptor(
                     bindTo,
                     virtualPath,
@@ -31,7 +33,7 @@ namespace Concoct
                 application);
         }
 
-        MvcHost(HttpListenerAcceptor acceptor, IApplication application) {
+        MvcHost(HttpListenerAcceptor acceptor, IConcoctApplication application) {
             this.acceptor = acceptor;
             this.application = application;
         }
@@ -54,9 +56,9 @@ namespace Concoct
                 handler(this, EventArgs.Empty);
         }
 
-        static IApplication CreateApplicationProxy(Type httpApplicationType) {
-            var generated = AppDomain.CurrentDomain.DefineDynamicAssembly(new AssemblyName("Concoct.Generated"), AssemblyBuilderAccess.Run);
-            var module = generated.DefineDynamicModule("Main");
+        static IConcoctApplication CreateApplicationProxy(Type httpApplicationType) {
+            var proxies = AppDomain.CurrentDomain.DefineDynamicAssembly(new AssemblyName(ProxiesAssemblyName), AssemblyBuilderAccess.Run);
+            var module = proxies.DefineDynamicModule("Main");
             var proxy = ApplicationBuilder.CreateIn(module, httpApplicationType);
             proxy.DynamicEventWireUp(x => x.Start(), "Application_Start");
             return proxy.CreateType();
