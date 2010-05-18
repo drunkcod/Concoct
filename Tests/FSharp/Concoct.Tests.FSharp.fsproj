@@ -39,13 +39,27 @@
       <HintPath>..\..\..\Lib\NUnit\nunit.framework.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Core" />
     <Reference Include="System.Web" />
+    <Reference Include="System.Web.Abstractions" />
+    <Reference Include="System.Web.Mvc, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35" />
+    <Reference Include="System.Web.Routing" />
+    <Reference Include="Xlnt.Stuff">
+      <HintPath>..\..\..\Xlnt.Stuff\Build\Xlnt.Stuff.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Http.fs" />
     <Compile Include="MvcHostTests.fs" />
+    <Compile Include="ServiceDashboardTests.fs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\Samples\ServiceDashboard\Concoct.Samples.ServiceDashboard.csproj">
+      <Name>Concoct.Samples.ServiceDashboard</Name>
+      <Project>{b0be49b5-99ca-4f47-96e0-50828ff8452f}</Project>
+      <Private>True</Private>
+    </ProjectReference>
     <ProjectReference Include="..\..\Source\Concoct.csproj">
       <Name>Concoct</Name>
       <Project>{dfca252b-64ba-40cb-8ce1-c8750c4526c7}</Project>

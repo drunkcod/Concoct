@@ -4,7 +4,7 @@ using System.Web;
 
 namespace Concoct.Web
 {
-    class HttpListenerContextAdapter : HttpContextBase
+    public class HttpListenerContextAdapter : HttpContextBase
     {
         class HttpListenerWorkerRequest : HttpWorkerRequest
         {
@@ -116,9 +116,15 @@ namespace Concoct.Web
             return new HttpContext(worker);
         }
 
-        static Func<Uri,string> MakeRelativeUriFunc(Uri request, string virtualPath){
+        public static Func<Uri,string> MakeRelativeUriFunc(Uri request, string virtualPath){
             var baseUri = new Uri(string.Format("{0}://{1}{2}/", request.Scheme, request.Host, virtualPath));
-            return uri => "~/" + baseUri.MakeRelativeUri(uri);
+            return uri => {
+                var relative = "~/" + baseUri.MakeRelativeUri(uri);
+                if (relative.StartsWith("~/../"))
+                    return "~/";
+                else
+                    return relative;
+            };
         }
     }
 }
