@@ -23,7 +23,7 @@ namespace Concoct
 
         readonly HttpListener listener = new HttpListener();
         readonly HttpListenerAcceptorContext[] contexts;
-        readonly WaitHandle[] backlog;
+        WaitHandle[] backlog;
         readonly IHttpListenerRequestHandler handler;
         volatile bool isStopping;
 
@@ -35,7 +35,6 @@ namespace Concoct
         {
             listener.Prefixes.Add(FormatPrefix(bindTo, virtualDirectory));
             contexts = new HttpListenerAcceptorContext[1];
-            backlog = new WaitHandle[contexts.Length];
             this.handler = handler;
             for (int i = 0; i != contexts.Length; ++i)
                 contexts[i] = new HttpListenerAcceptorContext(this, i);
@@ -43,6 +42,7 @@ namespace Concoct
 
         public void Start() {
             listener.Start();
+            backlog = new WaitHandle[contexts.Length];
             for(int i = 0; i != contexts.Length; ++i)
                 BeginGetContext(contexts[i]);
         }
@@ -50,7 +50,8 @@ namespace Concoct
         public void Stop() {
             isStopping = true;
             listener.Stop();
-            WaitHandle.WaitAll(backlog);
+            if(backlog != null)
+                WaitHandle.WaitAll(backlog);
         }
 
         static string FormatPrefix(IPEndPoint bindTo, string virtualDirectory)

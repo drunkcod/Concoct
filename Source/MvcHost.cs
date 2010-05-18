@@ -5,7 +5,7 @@ using System.Reflection.Emit;
 
 namespace Concoct
 {
-    public class MvcHost
+    public class MvcHost : IDisposable
     {
         const string ProxiesAssemblyName = "Concoct.Proxies";
 
@@ -55,6 +55,8 @@ namespace Concoct
             if(handler != null)
                 handler(this, EventArgs.Empty);
         }
+
+        void IDisposable.Dispose() { Stop(); }
 
         static IConcoctApplication CreateApplicationProxy(Type httpApplicationType) {
             var proxies = AppDomain.CurrentDomain.DefineDynamicAssembly(new AssemblyName(ProxiesAssemblyName), AssemblyBuilderAccess.Run);
