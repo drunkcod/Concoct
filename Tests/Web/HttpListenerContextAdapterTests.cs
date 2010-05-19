@@ -9,12 +9,21 @@ namespace Concoct.Web
     [TestFixture]
     public class HttpListenerContextAdapterTests
     {
-        [Test]
-        public void MakeRelativeUriFunc_should_handle_slashless_root_uri() {
-            var request = new Uri("http://example.com");
-            var makeRelative = HttpListenerContextAdapter.MakeRelativeUriFunc(request, "/");
+        [TestCase("http://example.com/foo", "~/"),
+         TestCase("http://example.com/foo/", "~/")]
+        public void MakeRelativeUriFunc(string request, string expected) {
+            var baseUrl = new Uri("http://example.com");
+            var makeRelative = HttpListenerContextAdapter.MakeRelativeUriFunc(baseUrl, "/foo");
             
-            Assert.That(makeRelative(new Uri("http://example.com")), Is.EqualTo("~/"));
+            Assert.That(makeRelative(new Uri(request)), Is.EqualTo(expected));
+        }
+        [Test]
+        public void Should_handle_virtual_directory_missing_initial_slash()
+        {
+            var baseUrl = new Uri("http://example.com/");
+            var makeRelative = HttpListenerContextAdapter.MakeRelativeUriFunc(baseUrl, "foo");
+            
+            Assert.That(makeRelative(new Uri("http://example.com/foo")), Is.EqualTo("~/"));
         }
     }
 }

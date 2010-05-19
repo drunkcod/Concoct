@@ -117,7 +117,11 @@ namespace Concoct.Web
         }
 
         public static Func<Uri,string> MakeRelativeUriFunc(Uri request, string virtualPath){
-            var baseUri = new Uri(string.Format("{0}://{1}{2}/", request.Scheme, request.Host, virtualPath));
+            var baseUri = new Uri(string.Format("{0}://{1}{2}{3}/", 
+                request.Scheme, 
+                request.Host, 
+                virtualPath.StartsWith("/") ? string.Empty : "/",
+                virtualPath));
             return uri => {
                 var relative = "~/" + baseUri.MakeRelativeUri(uri);
                 if (relative.StartsWith("~/../"))

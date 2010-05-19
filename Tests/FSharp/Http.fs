@@ -3,4 +3,7 @@ open System.Net
 
     let get (url:string) responseHandler = 
         let request = WebRequest.Create(url) :?> HttpWebRequest
-        responseHandler(request.GetResponse() :?> HttpWebResponse)
+        try
+            use response = request.GetResponse() :?> HttpWebResponse
+            responseHandler(response)
+        with :? WebException as e -> responseHandler(e.Response :?> HttpWebResponse)
