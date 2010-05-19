@@ -10,6 +10,11 @@ namespace Concoct.Samples.ServiceDashboard
     // Note: For instructions on enabling IIS6 or IIS7 classic mode, 
     // visit http://go.microsoft.com/?LinkId=9394801
 
+    public class ServiceEntry
+    {
+        public string Id;
+    }
+
     public class MvcApplication : System.Web.HttpApplication
     {
         public static void RegisterRoutes(RouteCollection routes) {
@@ -21,6 +26,8 @@ namespace Concoct.Samples.ServiceDashboard
                 new { controller = "Home", action = "Index", id = UrlParameter.Optional } // Parameter defaults
             );
         }
+
+        public ICollection<ServiceEntry> Services { get { return new[] { new ServiceEntry { Id = "Foo" } }; } }
 
         protected void Application_Start() {
             RegisterRoutes(RouteTable.Routes);

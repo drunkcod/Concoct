@@ -38,6 +38,7 @@ namespace Concoct
             this.application = application;
         }
 
+        public object Application { get { return application; } }
         public event EventHandler<EventArgs> Starting;
 
         public void Start() {
