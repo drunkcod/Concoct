@@ -21,9 +21,12 @@ let ReadAllText (response:HttpWebResponse) =
     reader.ReadToEnd()
 
 let mutable Sample = null :> MvcHost
+let mutable Application = null :> MvcApplication
 
 let [<BeforeAll>] Start_ServiceDashboard_host() =
     Sample <- MvcHost.Create(IPEndPoint(IPAddress.Any, 80), "Samples.ServiceDashboard", typeof<MvcApplication>)
+    Application <- Sample.Application :?> MvcApplication
+    
     Sample.Starting.Add(fun _ -> 
         let controllerFactory = BasicControllerFactory()
         controllerFactory.Register(typeof<Concoct.Samples.ServiceDashboard.MvcApplication>.Assembly.GetTypes())
@@ -51,10 +54,9 @@ let [<It>] Should_have_self_links_for_each_service_containt_its_id() =
         |> Seq.cast<XPathNavigator>
         |> Seq.map (fun x -> (x.GetAttribute("id", ""), x.SelectSingleNode("link[@rel='self']/@href").Value))
 
-    let app = Sample.Application :?> MvcApplication
-    let services = Set(app.Services |> Seq.map (fun x -> x.Id))
+    let services = Set(Application.Services |> Seq.map (fun x -> x.Id))
 
-    Assert.That(Seq.length links, Is.EqualTo(app.Services.Count), "Service(s) missing")
+    Assert.That(Seq.length links, Is.EqualTo(Application.Services.Count), "Service(s) missing")
     links |> Seq.iter (fun (id, link) ->
         Assert.That(services.Contains(id), "Missing link to \"" + id + "\"")
         Assert.That(link, Is.StringContaining(id)))
