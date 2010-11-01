@@ -13,7 +13,7 @@
     <OutputType>Library</OutputType>
     <RootNamespace>Concoct.Tests.FSharp</RootNamespace>
     <AssemblyName>Concoct.Tests.FSharp</AssemblyName>
-    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <Name>Concoct.Tests.FSharp</Name>
     <TargetFrameworkProfile />
   </PropertyGroup>
@@ -48,6 +48,9 @@
     <Reference Include="System.Xml" />
     <Reference Include="Xlnt.Stuff">
       <HintPath>..\..\..\Xlnt.Stuff\Build\Xlnt.Stuff.dll</HintPath>
+    </Reference>
+    <Reference Include="Xlnt.Web">
+      <HintPath>..\..\..\Xlnt.Stuff\Build\Xlnt.Web.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>

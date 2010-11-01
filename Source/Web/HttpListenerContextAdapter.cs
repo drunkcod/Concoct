@@ -15,24 +15,25 @@ namespace Concoct.Web
                 this.context = context;
             }
 
+            HttpListenerRequestAdapter Request { get { return context.request; } }
+            HttpListenerResponseAdapter Response { get { return context.response; } }
+
             public override void EndOfRequest()
             {
                 throw new NotImplementedException();
             }
 
-            public override void FlushResponse(bool finalFlush)
-            {
-                context.Response.Flush();
+            public override void FlushResponse(bool finalFlush) {
+                Response.Flush();
             }
 
-            public override string GetHttpVerbName()
-            {
-                return context.Request.HttpMethod;
+            public override string GetHttpVerbName() {
+                return Request.HttpMethod;
             }
 
             public override string GetHttpVersion()
             {
-                return context.request.HttpVersion;
+                return Request.HttpVersion;
             }
 
             public override string GetLocalAddress()
@@ -50,10 +51,7 @@ namespace Concoct.Web
                 throw new NotImplementedException();
             }
 
-            public override string GetRawUrl()
-            {
-                throw new NotImplementedException();
-            }
+            public override string GetRawUrl() { return Request.RawUrl; }
 
             public override string GetRemoteAddress()
             {
@@ -65,10 +63,9 @@ namespace Concoct.Web
                 throw new NotImplementedException();
             }
 
-            public override string GetUriPath() { return context.Request.RawUrl; }
+            public override string GetUriPath() { return Request.RawUrl; }
 
-            public override void SendKnownResponseHeader(int index, string value)
-            {
+            public override void SendKnownResponseHeader(int index, string value) {
                 SendUnknownResponseHeader(GetKnownRequestHeader(index), value);
             }
 
@@ -87,19 +84,17 @@ namespace Concoct.Web
                 throw new NotImplementedException();
             }
 
-            public override void SendStatus(int statusCode, string statusDescription)
-            {
-                context.Response.Write(string.Format("{0} {1}", statusCode, statusDescription));
+            public override void SendStatus(int statusCode, string statusDescription) {
+                Response.Write(string.Format("{0} {1}", statusCode, statusDescription));
             }
 
-            public override void SendUnknownResponseHeader(string name, string value)
-            {
-                context.Response.Write(string.Format("{0}: {1}\r\n", name, value));
+            public override void SendUnknownResponseHeader(string name, string value) {
+                Response.Write(string.Format("{0}: {1}\r\n", name, value));
             }
         }
 
         readonly HttpListenerRequestAdapter request;
-        readonly HttpResponseBase response;
+        readonly HttpListenerResponseAdapter response;
 
         public HttpListenerContextAdapter(HttpListenerContext context, string virtualPath) {
             this.request = new HttpListenerRequestAdapter(context.Request, virtualPath, MakeRelativeUriFunc(context.Request.Url, virtualPath));
