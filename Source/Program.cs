@@ -6,6 +6,7 @@ using System.Web.Mvc;
 using Xlnt.Stuff;
 using Xlnt.Web.Mvc;
 using System.Reflection;
+using System.IO;
 
 namespace Concoct
 {
@@ -16,22 +17,22 @@ namespace Concoct
 
     public class Program
     {
-        static void Main(string[] args) {
+        static int Main(string[] args) {
+            if(args.Length != 2) {
+                Console.Error.WriteLine("Usage is {0} <assembly> <virtual-directory>", Path.GetFileName(typeof(Program).Assembly.Location));
+                return -1;
+            }
             var site = Assembly.LoadFrom(args[0]);
-
             var types = site.GetTypes();
             var httpApplicationType = types.Where(x => x.IsTypeOf<HttpApplication>()).First();
-
             var host = MvcHost.Create(new IPEndPoint(IPAddress.Any, 80), args[1], httpApplicationType);
-            host.Starting += (_, e) => {
-                var controllerFactory = new BasicControllerFactory();
-                controllerFactory.Register(types);
-                ControllerBuilder.Current.SetControllerFactory(controllerFactory);
-            };
+
             host.Start();
             Console.WriteLine("Listening for connections.");
             Console.ReadKey();
             host.Stop();
+
+            return 0;
         }
     }
 }
