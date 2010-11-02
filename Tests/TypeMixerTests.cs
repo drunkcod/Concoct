@@ -1,9 +1,10 @@
-﻿using NUnit.Framework;
+﻿using Cone;
+using NUnit.Framework;
 
 namespace Concoct
 {
-    [TestFixture]
-    public class TypeMixerTests
+    [Describe(typeof(TypeMixer<>))]
+    public class TypeMixerSpec
     {
         public abstract class FooBase
         {
@@ -17,13 +18,15 @@ namespace Concoct
             public int Foo() { return FooReturns; }
         }
 
-        [Test]
-        public void MixWith_sample() {
-            var mixed = TypeMixer<FooBase>.MixWith(new HalfFoo { FooReturns = 21 });
-            Assert.That(mixed.TwoFoo(), Is.EqualTo(42));
+        [Context("usage samples")]
+        public class Samples
+        {
+            public void MixWith() {
+                var mixed = TypeMixer<FooBase>.MixWith(new HalfFoo { FooReturns = 21 });
+                Assert.That(mixed.TwoFoo(), Is.EqualTo(42));
+            }
         }
 
-        [Test]
         public void should_reuse_generated_class() {
             var first = TypeMixer<FooBase>.MixWith(new HalfFoo { FooReturns = 21 });
             var second = TypeMixer<FooBase>.MixWith(new HalfFoo { FooReturns = 21 });
@@ -41,7 +44,6 @@ namespace Concoct
             protected abstract int Foo();
         }
         
-        [Test]
         public void should_use_target_field_if_marked(){
             var inner = new HalfFoo { FooReturns = 11 };
             var item = TypeMixer<FooImpl>.MixWith(inner);
