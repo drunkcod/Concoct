@@ -1,9 +1,19 @@
 using System;
 using System.Net;
 using System.Web;
+using System.IO;
 
 namespace Concoct.Web
 {
+    class ConcoctHttpServerUtility : HttpServerUtilityBase
+    {
+        public override string MapPath(string path) {
+            if(path == "~")
+                return Path.GetDirectoryName(GetType().Assembly.Location);
+            throw new ArgumentException();
+        }
+    }
+
     public class HttpListenerContextAdapter : HttpContextBase
     {
         class HttpListenerWorkerRequest : HttpWorkerRequest
@@ -95,6 +105,7 @@ namespace Concoct.Web
 
         readonly HttpListenerRequestAdapter request;
         readonly HttpListenerResponseAdapter response;
+        readonly HttpServerUtilityBase server = new ConcoctHttpServerUtility();
 
         public HttpListenerContextAdapter(HttpListenerContext context, string virtualPath) {
             this.request = new HttpListenerRequestAdapter(context.Request, virtualPath, MakeRelativeUriFunc(context.Request.Url, virtualPath));
@@ -104,6 +115,7 @@ namespace Concoct.Web
         public override HttpRequestBase Request { get { return request; } }
         public override HttpSessionStateBase Session { get { return null; } }
         public override HttpResponseBase Response { get { return response; } }
+        public override HttpServerUtilityBase Server { get { return server; } }
 
         public HttpContext AsHttpContext()
         {
