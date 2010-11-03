@@ -13,9 +13,9 @@ namespace Concoct.Web
         }
 
         public override string MapPath(string path) {
-            if(path.StartsWith("."))
+            if(path.StartsWith("./"))
                 return MapPath(path.Substring(1));
-            return Path.Combine(physicalPath, path.TrimStart('/', '~'));
+            return Path.GetFullPath(Path.Combine(physicalPath, path.TrimStart('/', '~')));
         }
     }
 }

@@ -20,7 +20,8 @@ namespace Concoct.Web
             .Add(x => x.MapPath(".", PhysicalPath))
             .Add(x => x.MapPath("~", PhysicalPath))
             .Add(x => x.MapPath("Foo", Path.Combine(PhysicalPath, "Foo")))
-            .Add(x => x.MapPath("~/Foo", Path.Combine(PhysicalPath, "Foo")));
+            .Add(x => x.MapPath("~/Foo", Path.Combine(PhysicalPath, "Foo")))
+            .Add(x => x.MapPath("..", Path.GetFullPath(Path.Combine(PhysicalPath, ".."))));
         }
     }
 }
