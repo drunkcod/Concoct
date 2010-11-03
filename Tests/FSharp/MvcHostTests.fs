@@ -13,7 +13,7 @@ type SimpleApplication() =
     member this.Application_Start() = 
         SimpleApplication.started <- SimpleApplication.started + 1
 
-let NewSimpleApplicationHost() = MvcHost.Create(IPEndPoint(IPAddress.Any, 80), "Concoct.Tests", typeof<SimpleApplication>)
+let NewSimpleApplicationHost() = MvcHost.Create(IPEndPoint(IPAddress.Any, 80), "Concoct.Tests", ".", typeof<SimpleApplication>)
 
 let [<Test>] is_disposable() = 
     use host = NewSimpleApplicationHost()

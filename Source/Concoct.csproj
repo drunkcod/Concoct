@@ -92,6 +92,7 @@
     <Compile Include="MvcHost.cs" />
     <Compile Include="MvcRequestHandler.cs" />
     <Compile Include="HttpListenerAcceptor.cs" />
+    <Compile Include="Web\ConcoctHttpServerUtility.cs" />
     <Compile Include="Web\EmptyFileCollection.cs" />
     <Compile Include="Web\HttpListenerContextAdapter.cs" />
     <Compile Include="Web\HttpListenerRequestAdapter.cs" />

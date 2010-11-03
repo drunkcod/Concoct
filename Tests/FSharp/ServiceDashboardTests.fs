@@ -24,7 +24,7 @@ let mutable Sample = null :> MvcHost
 let mutable Application = null :> MvcApplication
 
 let [<BeforeAll>] Start_ServiceDashboard_host() =
-    Sample <- MvcHost.Create(IPEndPoint(IPAddress.Any, 80), "Samples.ServiceDashboard", typeof<MvcApplication>)
+    Sample <- MvcHost.Create(IPEndPoint(IPAddress.Any, 80), "Samples.ServiceDashboard", ".", typeof<MvcApplication>)
     Application <- Sample.Application :?> MvcApplication
     
     Sample.Starting.Add(fun _ -> 

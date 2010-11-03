@@ -36,7 +36,7 @@
     <Reference Include="mscorlib" />
     <Reference Include="FSharp.Core" />
     <Reference Include="nunit.framework">
-      <HintPath>..\..\..\Lib\NUnit\nunit.framework.dll</HintPath>
+      <HintPath>..\..\..\Tools\NUnit-2.5.7.10213\bin\net-2.0\framework\nunit.framework.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />

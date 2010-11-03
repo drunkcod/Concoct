@@ -17,19 +17,19 @@ namespace Concoct
         readonly HttpListenerAcceptor acceptor;
         readonly IConcoctApplication application;
 
-        public static MvcHost Create(IPEndPoint bindTo, string virtualPath) {
-            return Create(bindTo, virtualPath, new NullApplication());
+        public static MvcHost Create(IPEndPoint bindTo, string virtualPath, string physicalPath) {
+            return Create(bindTo, virtualPath, physicalPath, new NullApplication());
         }
 
-        public static MvcHost Create(IPEndPoint bindTo, string virtualPath, Type applicationType) {
-            return Create(bindTo, virtualPath, CreateApplicationProxy(applicationType));
+        public static MvcHost Create(IPEndPoint bindTo, string virtualPath, string physicalPath, Type applicationType) {
+            return Create(bindTo, virtualPath, physicalPath, CreateApplicationProxy(applicationType));
         }
 
-        static MvcHost Create(IPEndPoint bindTo, string virtualPath, IConcoctApplication application) {
+        static MvcHost Create(IPEndPoint bindTo, string virtualPath, string physicalPath, IConcoctApplication application) {
             return new MvcHost(new HttpListenerAcceptor(
                     bindTo,
                     virtualPath,
-                    new MvcRequestHandler(virtualPath)),
+                    new MvcRequestHandler(virtualPath, physicalPath)),
                 application);
         }
 

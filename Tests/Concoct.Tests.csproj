@@ -59,9 +59,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\Lib\Moq\Moq.dll</HintPath>
     </Reference>
-    <Reference Include="nunit.framework, Version=2.5.3.9345, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
+    <Reference Include="nunit.framework, Version=2.5.5.10112, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\Lib\NUnit\nunit.framework.dll</HintPath>
+      <HintPath>..\..\Tools\NUnit-2.5.7.10213\bin\net-2.0\framework\nunit.framework.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core">
@@ -95,6 +95,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="TypeMixerTests.cs" />
+    <Compile Include="Web\ConcoctHttpServerUtilitySpec.cs" />
     <Compile Include="Web\HttpListenerContextAdapterTests.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -5,15 +5,6 @@ using System.IO;
 
 namespace Concoct.Web
 {
-    class ConcoctHttpServerUtility : HttpServerUtilityBase
-    {
-        public override string MapPath(string path) {
-            if(path == "~")
-                return Path.GetDirectoryName(GetType().Assembly.Location);
-            throw new ArgumentException();
-        }
-    }
-
     public class HttpListenerContextAdapter : HttpContextBase
     {
         class HttpListenerWorkerRequest : HttpWorkerRequest
@@ -105,11 +96,12 @@ namespace Concoct.Web
 
         readonly HttpListenerRequestAdapter request;
         readonly HttpListenerResponseAdapter response;
-        readonly HttpServerUtilityBase server = new ConcoctHttpServerUtility();
+        readonly HttpServerUtilityBase server;
 
-        public HttpListenerContextAdapter(HttpListenerContext context, string virtualPath) {
+        public HttpListenerContextAdapter(HttpListenerContext context, string virtualPath, string physicalPath) {
             this.request = new HttpListenerRequestAdapter(context.Request, virtualPath, MakeRelativeUriFunc(context.Request.Url, virtualPath));
             this.response = new HttpListenerResponseAdapter(context.Response);
+            this.server = new ConcoctHttpServerUtility(physicalPath);
         }
 
         public override HttpRequestBase Request { get { return request; } }

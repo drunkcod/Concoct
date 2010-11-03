@@ -25,7 +25,7 @@ namespace Concoct
             var site = Assembly.LoadFrom(args[0]);
             var types = site.GetTypes();
             var httpApplicationType = types.Where(x => x.IsTypeOf<HttpApplication>()).First();
-            var host = MvcHost.Create(new IPEndPoint(IPAddress.Any, 80), args[1], httpApplicationType);
+            var host = MvcHost.Create(new IPEndPoint(IPAddress.Any, 80), args[1], Environment.CurrentDirectory, httpApplicationType);
 
             host.Start();
             Console.WriteLine("Listening for connections.");
