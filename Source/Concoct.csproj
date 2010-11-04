@@ -88,6 +88,7 @@
   <ItemGroup>
     <Compile Include="ApplicationBuilder.cs" />
     <Compile Include="IConcoctApplication.cs" />
+    <Compile Include="IHttpListenerRequestHandler.cs" />
     <Compile Include="TypeMixer.cs" />
     <Compile Include="MvcHost.cs" />
     <Compile Include="MvcRequestHandler.cs" />

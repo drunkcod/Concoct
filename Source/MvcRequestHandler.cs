@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Net;
+using System.Web;
 using System.Web.Routing;
 using Concoct.Web;
 
@@ -14,11 +15,11 @@ namespace Concoct
             this.virtualPath = virtualPath;
             this.physicalPath = physicalPath;
         }
+
         public void Process(HttpListenerContext context) {
             var httpContext = new HttpListenerContextAdapter(context, virtualPath, physicalPath);
             try {
-                var data = RouteTable.Routes.GetRouteData(httpContext);
-                var request = new RequestContext(httpContext, data);
+                var request = new RequestContext(httpContext, GetRouteData(httpContext));
                 var handler = data.RouteHandler.GetHttpHandler(request);
                 handler.ProcessRequest(httpContext.AsHttpContext());
             } catch (Exception e) {
@@ -26,6 +27,10 @@ namespace Concoct
                 httpContext.Response.Write(e.ToString());
             }
             httpContext.Response.End();
+        }
+
+        public void GetRouteData(HttpContextBase httpContext) {
+            return RouteTable.Routes.GetRouteData(httpContext);
         }
     }
 }
