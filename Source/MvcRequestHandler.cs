@@ -19,7 +19,8 @@ namespace Concoct
         public void Process(HttpListenerContext context) {
             var httpContext = new HttpListenerContextAdapter(context, virtualPath, physicalPath);
             try {
-                var request = new RequestContext(httpContext, GetRouteData(httpContext));
+                var data = GetRouteData(httpContext);
+                var request = new RequestContext(httpContext, data);
                 var handler = data.RouteHandler.GetHttpHandler(request);
                 handler.ProcessRequest(httpContext.AsHttpContext());
             } catch (Exception e) {
@@ -29,7 +30,7 @@ namespace Concoct
             httpContext.Response.End();
         }
 
-        public void GetRouteData(HttpContextBase httpContext) {
+        public RouteData GetRouteData(HttpContextBase httpContext) {
             return RouteTable.Routes.GetRouteData(httpContext);
         }
     }
