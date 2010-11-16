@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Net;
 using System.Threading;
 
@@ -40,6 +41,8 @@ namespace Concoct
                 contexts[i] = new HttpListenerAcceptorContext(this, i);
         }
 
+        public string Prefix { get { return listener.Prefixes.First(); } }
+
         public void Start() {
             listener.Start();
             backlog = new WaitHandle[contexts.Length];
@@ -54,9 +57,14 @@ namespace Concoct
                 WaitHandle.WaitAll(backlog);
         }
 
-        static string FormatPrefix(IPEndPoint bindTo, string virtualDirectory)
-        {
-            return string.Format("http://{0}:{1}{2}", HostFrom(bindTo.Address), bindTo.Port, FormatVirtualDirectory(virtualDirectory));
+        static string FormatPrefix(IPEndPoint bindTo, string virtualDirectory) {
+            var virtualUri = new Uri(virtualDirectory, UriKind.RelativeOrAbsolute);
+            if(virtualUri.IsAbsoluteUri) {
+                var uri = new UriBuilder(virtualUri);
+                uri.Port = bindTo.Port;           
+                return uri.ToString(); 
+            }
+            return new UriBuilder("http", "*", bindTo.Port){ Path = virtualDirectory }.ToString();  
         }
 
         static string FormatVirtualDirectory(string virtualDirectory) { return string.Format("/{0}/", virtualDirectory).Replace("//", "/"); }
