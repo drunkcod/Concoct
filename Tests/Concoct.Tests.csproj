@@ -94,9 +94,10 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="TypeMixerTests.cs" />
+    <Compile Include="HttpListenerAcceptorSpec.cs" />
+    <Compile Include="TypeMixerSpec.cs" />
     <Compile Include="Web\ConcoctHttpServerUtilitySpec.cs" />
-    <Compile Include="Web\HttpListenerContextAdapterTests.cs" />
+    <Compile Include="Web\HttpListenerContextAdapterSpec.cs" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Client.3.5">

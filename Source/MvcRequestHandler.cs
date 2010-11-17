@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Net;
+using System.Web;
 using System.Web.Routing;
 using Concoct.Web;
 
@@ -18,7 +19,7 @@ namespace Concoct
         public void Process(HttpListenerContext context) {
             var httpContext = new HttpListenerContextAdapter(context, virtualPath, physicalPath);
             try {
-                var data = RouteTable.Routes.GetRouteData(httpContext);
+                var data = GetRouteData(httpContext);
                 var request = new RequestContext(httpContext, data);
                 var handler = data.RouteHandler.GetHttpHandler(request);
                 handler.ProcessRequest(httpContext.AsHttpContext());
@@ -27,6 +28,10 @@ namespace Concoct
                 httpContext.Response.Write(e.ToString());
             }
             httpContext.Response.End();
+        }
+
+        public RouteData GetRouteData(HttpContextBase httpContext) {
+            return RouteTable.Routes.GetRouteData(httpContext);
         }
     }
 }
