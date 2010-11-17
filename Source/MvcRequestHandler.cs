@@ -14,6 +14,7 @@ namespace Concoct
             this.virtualPath = virtualPath;
             this.physicalPath = physicalPath;
         }
+
         public void Process(HttpListenerContext context) {
             var httpContext = new HttpListenerContextAdapter(context, virtualPath, physicalPath);
             try {
