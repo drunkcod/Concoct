@@ -26,10 +26,11 @@ namespace Concoct
         }
 
         static MvcHost Create(IPEndPoint bindTo, string virtualPath, string physicalPath, IConcoctApplication application) {
+            var uri = new Uri(virtualPath, UriKind.RelativeOrAbsolute);
             return new MvcHost(new HttpListenerAcceptor(
                     bindTo,
-                    virtualPath,
-                    new MvcRequestHandler(virtualPath, physicalPath)),
+                    uri,
+                    new MvcRequestHandler(uri.IsAbsoluteUri ? uri.AbsolutePath : virtualPath, physicalPath)),
                 application);
         }
 

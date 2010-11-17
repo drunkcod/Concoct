@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
 using Cone;
 
 namespace Concoct
@@ -11,13 +12,13 @@ namespace Concoct
     [Describe(typeof(HttpListenerAcceptorSpec))]
     public class HttpListenerAcceptorSpec
     {
-        public void with_fully_qualified_path() {
-            var listener = new HttpListenerAcceptor(new IPEndPoint(IPAddress.Any, 80), "http://example.com", new NullHttpListenerRequestHandler());
+        public void with_absolute_path() {
+            var listener = new HttpListenerAcceptor(new IPEndPoint(IPAddress.Any, 80), new Uri("http://example.com"), new NullHttpListenerRequestHandler());
             Verify.That(() => listener.Prefix == "http://example.com:80/");
         }
         
         public void with_relative_path() {
-            var listener = new HttpListenerAcceptor(new IPEndPoint(IPAddress.Any, 80), "/", new NullHttpListenerRequestHandler());
+            var listener = new HttpListenerAcceptor(new IPEndPoint(IPAddress.Any, 80), new Uri("/", UriKind.Relative), new NullHttpListenerRequestHandler());
             Verify.That(() => listener.Prefix == "http://*:80/");
         }
     }

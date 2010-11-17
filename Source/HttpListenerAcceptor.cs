@@ -29,12 +29,11 @@ namespace Concoct
         volatile bool isStopping;
 
         public HttpListenerAcceptor(IPEndPoint bindTo, IHttpListenerRequestHandler handler)
-            : this(bindTo, string.Empty, handler)
+            : this(bindTo, new Uri("/", UriKind.Relative), handler)
         { }
 
-        public HttpListenerAcceptor(IPEndPoint bindTo, string virtualDirectory, IHttpListenerRequestHandler handler)
+        public HttpListenerAcceptor(IPEndPoint bindTo, Uri uri, IHttpListenerRequestHandler handler)
         {
-            var uri = new Uri(virtualDirectory, UriKind.RelativeOrAbsolute);
             listener.Prefixes.Add(FormatPrefix(bindTo, uri));
             contexts = new HttpListenerAcceptorContext[1];
             this.handler = handler;
