@@ -87,6 +87,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ApplicationBuilder.cs" />
+    <Compile Include="ConcoctConfiguration.cs" />
     <Compile Include="IConcoctApplication.cs" />
     <Compile Include="IHttpListenerRequestHandler.cs" />
     <Compile Include="TypeMixer.cs" />
