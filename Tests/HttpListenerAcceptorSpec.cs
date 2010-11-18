@@ -18,8 +18,8 @@ namespace Concoct
         }
         
         public void with_relative_path() {
-            var listener = new HttpListenerAcceptor(new IPEndPoint(IPAddress.Any, 80), new Uri("/", UriKind.Relative), new NullHttpListenerRequestHandler());
-            Verify.That(() => listener.Prefix == "http://*:80/");
+            var listener = new HttpListenerAcceptor(new IPEndPoint(IPAddress.Any, 80), new Uri("/Foo", UriKind.Relative), new NullHttpListenerRequestHandler());
+            Verify.That(() => listener.Prefix == "http://*:80/Foo/");
         }
     }
 }

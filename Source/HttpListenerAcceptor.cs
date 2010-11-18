@@ -34,7 +34,7 @@ namespace Concoct
 
         public HttpListenerAcceptor(IPEndPoint bindTo, Uri uri, IHttpListenerRequestHandler handler)
         {
-            listener.Prefixes.Add(FormatPrefix(bindTo, uri));
+            listener.Prefixes.Add(EnsureTrailingSlash(FormatPrefix(bindTo, uri)));
             contexts = new HttpListenerAcceptorContext[1];
             this.handler = handler;
             for (int i = 0; i != contexts.Length; ++i)
@@ -63,7 +63,11 @@ namespace Concoct
             return new UriBuilder("http", "*", bindTo.Port){ Path = uri.OriginalString }.ToString();  
         }
 
-        static string FormatVirtualDirectory(string virtualDirectory) { return string.Format("/{0}/", virtualDirectory).Replace("//", "/"); }
+        static string EnsureTrailingSlash(string prefix) {
+            if(prefix.EndsWith("/"))
+                return prefix;
+            return prefix + "/";
+        }
 
         static string HostFrom(IPAddress address)
         {
