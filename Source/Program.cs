@@ -57,7 +57,7 @@ namespace Concoct
                 VirtualDirectoryOrPrefix = items[1]
             };
 
-            var r = new Regex("^--(?<name>.+)=(?<value>.+$)");
+            var r = new Regex(string.Format("^{0}(?<name>.+)=(?<value>.+$)", OptionPrefix));
             foreach(var item in options) {
                 var m = r.Match(item);
                 if(m.Success)
