@@ -95,6 +95,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="HttpListenerAcceptorSpec.cs" />
+    <Compile Include="ProgramSpec.cs" />
     <Compile Include="TypeMixerSpec.cs" />
     <Compile Include="Web\ConcoctHttpServerUtilitySpec.cs" />
     <Compile Include="Web\HttpListenerContextAdapterSpec.cs" />

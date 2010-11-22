@@ -35,7 +35,7 @@ namespace Concoct
             }
         }
 
-        static ConcoctConfiguration ParseConfiguration(string[] args) {
+        public static ConcoctConfiguration ParseConfiguration(string[] args) {
             if(args.Length != 2)
                 throw new ConfigurationErrorException();
             return new ConcoctConfiguration {

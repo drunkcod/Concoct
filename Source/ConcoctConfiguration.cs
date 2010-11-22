@@ -2,7 +2,7 @@
 
 namespace Concoct
 {
-    class ConcoctConfiguration
+    public class ConcoctConfiguration
     {
         public ConcoctConfiguration() {
             Port = 80;
