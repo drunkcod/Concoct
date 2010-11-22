@@ -40,32 +40,28 @@ namespace Concoct
         const string OptionPrefix = "--";
 
         public static ConcoctConfiguration ParseConfiguration(string[] args) {
-            var options = new List<string>();            
+            var configuration = new ConcoctConfiguration();
+            var r = new Regex(string.Format("^{0}(?<name>.+)=(?<value>.+$)", OptionPrefix));
             var items = new List<string>();
 
-            for(int i = 0; i != args.Length; ++i)
-                if(args[i].StartsWith(OptionPrefix))
-                    options.Add(args[i]);
+            for(int i = 0; i != args.Length; ++i) {
+                var item = args[i];
+                if(item.StartsWith(OptionPrefix)) {
+                    var m = r.Match(item);
+                    if(m.Success)
+                        switch(m.Groups["name"].Value) {
+                            case "port": configuration.Port = Int32.Parse(m.Groups["value"].Value); break; 
+                        }
+                }
                 else
-                    items.Add(args[i]);
+                    items.Add(item);
+            }
 
             if(items.Count != 2)
                 throw new ConfigurationErrorException();
 
-            var configuration = new ConcoctConfiguration {
-                ApplicationAssemblyPath = items[0],
-                VirtualDirectoryOrPrefix = items[1]
-            };
-
-            var r = new Regex(string.Format("^{0}(?<name>.+)=(?<value>.+$)", OptionPrefix));
-            foreach(var item in options) {
-                var m = r.Match(item);
-                if(m.Success)
-                    switch(m.Groups["name"].Value) {
-                        case "port": configuration.Port = Int32.Parse(m.Groups["value"].Value); break; 
-                    }
-            }
-                
+            configuration.ApplicationAssemblyPath = items[0];
+            configuration.VirtualDirectoryOrPrefix = items[1];
             return configuration;
         }
     }
