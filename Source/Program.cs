@@ -4,6 +4,8 @@ using System.Linq;
 using System.Reflection;
 using System.Web;
 using Xlnt.Stuff;
+using System.Collections.Generic;
+using System.Text.RegularExpressions;
 
 namespace Concoct
 {
@@ -29,19 +31,42 @@ namespace Concoct
                 host.Stop();
 
                 return 0;
-            } catch(ConfigurationErrorException e) {
+            } catch(ConfigurationErrorException) {
                 Console.Error.WriteLine("Usage is {0} <assembly> <virtual-directory>", Path.GetFileName(typeof(Program).Assembly.Location));
                 return -1;
             }
         }
 
+        const string OptionPrefix = "--";
+
         public static ConcoctConfiguration ParseConfiguration(string[] args) {
-            if(args.Length != 2)
+            var options = new List<string>();            
+            var items = new List<string>();
+
+            for(int i = 0; i != args.Length; ++i)
+                if(args[i].StartsWith(OptionPrefix))
+                    options.Add(args[i]);
+                else
+                    items.Add(args[i]);
+
+            if(items.Count != 2)
                 throw new ConfigurationErrorException();
-            return new ConcoctConfiguration {
-                ApplicationAssemblyPath = args[0],
-                VirtualDirectoryOrPrefix = args[1]
+
+            var configuration = new ConcoctConfiguration {
+                ApplicationAssemblyPath = items[0],
+                VirtualDirectoryOrPrefix = items[1]
             };
+
+            var r = new Regex("^--(?<name>.+)=(?<value>.+$)");
+            foreach(var item in options) {
+                var m = r.Match(item);
+                if(m.Success)
+                    switch(m.Groups["name"].Value) {
+                        case "port": configuration.Port = Int32.Parse(m.Groups["value"].Value); break; 
+                    }
+            }
+                
+            return configuration;
         }
     }
 }

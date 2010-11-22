@@ -26,6 +26,10 @@ namespace Concoct
             public void second_argument_is_prefix_or_vdir() {
                 Verify.That(() => ParseConfiguration(AssemblyName, VirtualDirectory).VirtualDirectoryOrPrefix == VirtualDirectory);
             }
+
+            public void port_parameter() {
+                Verify.That(() => ParseConfiguration(AssemblyName, VirtualDirectory, "--port=8181").Port == 8181);
+            }
         }
     }
 }
