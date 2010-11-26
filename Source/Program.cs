@@ -31,6 +31,12 @@ namespace Concoct
                 host.Stop();
 
                 return 0;
+            } catch(ReflectionTypeLoadException loadError) {
+                Console.Error.WriteLine("Error applications.");
+                foreach(var item in loadError.LoaderExceptions) {
+                    Console.Error.WriteLine(item);
+                }
+                return -2;
             } catch(ConfigurationErrorException) {
                 Console.Error.WriteLine("Usage is {0} <assembly> <virtual-directory>", Path.GetFileName(typeof(Program).Assembly.Location));
                 return -1;

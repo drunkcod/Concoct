@@ -2,6 +2,7 @@ using System;
 using System.Net;
 using System.Web;
 using System.IO;
+using System.Web.Caching;
 
 namespace Concoct.Web
 {
@@ -97,17 +98,20 @@ namespace Concoct.Web
         readonly HttpListenerRequestAdapter request;
         readonly HttpListenerResponseAdapter response;
         readonly HttpServerUtilityBase server;
+        readonly Cache cache;
 
         public HttpListenerContextAdapter(HttpListenerContext context, string virtualPath, string physicalPath) {
             this.request = new HttpListenerRequestAdapter(context.Request, virtualPath, MakeRelativeUriFunc(context.Request.Url, virtualPath));
             this.response = new HttpListenerResponseAdapter(context.Response);
             this.server = new ConcoctHttpServerUtility(physicalPath);
+            this.cache = new Cache();
         }
 
         public override HttpRequestBase Request { get { return request; } }
         public override HttpSessionStateBase Session { get { return null; } }
         public override HttpResponseBase Response { get { return response; } }
         public override HttpServerUtilityBase Server { get { return server; } }
+        public override Cache Cache { get { return cache; } }
 
         public HttpContext AsHttpContext()
         {
