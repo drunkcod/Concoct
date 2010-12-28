@@ -3,13 +3,18 @@ open System.Diagnostics
 open System.IO
 open System.Reflection
 open System.Xml
+open System
 open Ionic.Zip
 
-let clean what =
-    what |> Seq.map (fun p -> try Directory.Delete(p, true); true with | :? DirectoryNotFoundException -> true | _ -> false) |> Seq.reduce (&&)
+let clean =
+  let safeDirectoryDelete path = 
+    try Directory.Delete(path, true); true
+    with 
+    | :? DirectoryNotFoundException -> true
+    | _ -> false 
+  Seq.forall safeDirectoryDelete
 
 let SolutionPath = "Concoct.sln"
-let MainProject = "Source\Concoct.csproj"
 
 let build args =
   let fxPath = System.Runtime.InteropServices.RuntimeEnvironment.GetRuntimeDirectory()  
@@ -18,10 +23,11 @@ let build args =
     Process.Start(
       ProcessStartInfo(
         FileName = msBuild4,
-        Arguments = SolutionPath + " /nologo /m /p:Configuration=Release " + args,
+        Arguments = SolutionPath + " /nologo " + args,
         UseShellExecute = false))
   build.WaitForExit()
   build.ExitCode = 0
+
 let package() =
     let version = AssemblyName.GetAssemblyName("Bin\Concoct.exe").Version.ToString()
 
@@ -32,5 +38,5 @@ let package() =
     true
 
 clean ["Build";"Bin"]
-&& build ""
+&& build "/m /p:Configuration=Release"
 && package()
