@@ -12,7 +12,7 @@
     <AssemblyName>Concoct</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <OutputPath>$(SolutionDir)\Build</OutputPath>
+    <OutputPath>$(SolutionDir)\Bin</OutputPath>
     <IntermediateOutputPath>$(SolutionDir)\Build\obj\$(MSBuildProjectName)</IntermediateOutputPath>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
@@ -45,9 +45,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
+    <DebugType>none</DebugType>
     <Optimize>true</Optimize>
-    <DefineConstants>TRACE</DefineConstants>
+    <DefineConstants>
+    </DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -77,12 +78,11 @@
       <Private>False</Private>
     </Reference>
     <Reference Include="System.Xml" />
-    <Reference Include="Xlnt.Stuff, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\Xlnt.Stuff\Build\Xlnt.Stuff.dll</HintPath>
+    <Reference Include="Xlnt.Stuff">
+      <HintPath>..\Lib\Xlnt.Stuff.dll</HintPath>
     </Reference>
     <Reference Include="Xlnt.Web">
-      <HintPath>..\..\Xlnt.Stuff\Build\Xlnt.Web.dll</HintPath>
+      <HintPath>..\Lib\Xlnt.Web.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -94,6 +94,7 @@
     <Compile Include="MvcHost.cs" />
     <Compile Include="MvcRequestHandler.cs" />
     <Compile Include="HttpListenerAcceptor.cs" />
+    <Compile Include="Version.cs" />
     <Compile Include="Web\ConcoctHttpServerUtility.cs" />
     <Compile Include="Web\EmptyFileCollection.cs" />
     <Compile Include="Web\HttpListenerContextAdapter.cs" />
