@@ -68,6 +68,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ApplicationBuilder.cs" />
+    <Compile Include="ConcoctApplication.cs" />
     <Compile Include="ConcoctConfiguration.cs" />
     <Compile Include="ConcoctServiceInstaller.cs">
       <SubType>Component</SubType>

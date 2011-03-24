@@ -16,7 +16,7 @@ namespace Concoct
             const string VirtualDirectory = "/VirtualDirectory";
 
             ConcoctConfiguration ParseConfiguration(params string[] args) {
-                return ConcoctApplication.ParseConfiguration(args);
+                return ConcoctConfiguration.Parse(args);
             }
 
             public void first_argument_is_assembly_name() {
