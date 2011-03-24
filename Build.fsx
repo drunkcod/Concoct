@@ -30,6 +30,7 @@ let package() =
     let version = AssemblyName.GetAssemblyName("Bin\Concoct.exe").Version.ToString()
     use zip = new ZipFile()
     zip.AddDirectory("Bin", "Bin") |> ignore
+    zip.AddFile("README") |> ignore
     zip.Save(@"Bin\Concoct-" + version + ".zip")
     true
 

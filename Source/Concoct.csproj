@@ -33,6 +33,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
+    <Reference Include="System.Configuration.Install" />
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
       <Private>True</Private>
@@ -41,6 +42,7 @@
     <Reference Include="System.Data.Linq">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
+    <Reference Include="System.ServiceProcess" />
     <Reference Include="System.Web">
       <Private>False</Private>
     </Reference>
@@ -67,6 +69,9 @@
   <ItemGroup>
     <Compile Include="ApplicationBuilder.cs" />
     <Compile Include="ConcoctConfiguration.cs" />
+    <Compile Include="ConcoctServiceInstaller.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="IConcoctApplication.cs" />
     <Compile Include="IHttpListenerRequestHandler.cs" />
     <Compile Include="TypeMixer.cs" />
@@ -79,7 +84,9 @@
     <Compile Include="Web\HttpListenerContextAdapter.cs" />
     <Compile Include="Web\HttpListenerRequestAdapter.cs" />
     <Compile Include="Web\HttpListenerResponseAdapter.cs" />
-    <Compile Include="Program.cs" />
+    <Compile Include="Program.cs">
+      <SubType>Component</SubType>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
