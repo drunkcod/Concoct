@@ -27,7 +27,7 @@ namespace Concoct
             if(Environment.UserInteractive)
                 return new Program(Console.Out, config).RunInteractive();
             else {
-                using(var log = new StreamWriter(File.OpenWrite("C:\\Concoct.log")))
+                using(var log = new StreamWriter(File.OpenWrite("Concoct.log")))
                 return new Program(log, config).RunService();
             }
         }
