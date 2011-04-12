@@ -2,7 +2,9 @@
 using System.Linq;
 using System.Reflection;
 using System.Web;
+using Concoct.Web.Routing;
 using Xlnt.Stuff;
+using System.IO;
 
 namespace Concoct
 {
@@ -17,9 +19,13 @@ namespace Concoct
 
         public void OnStart(string[] args) {
             try {
-                var site = Assembly.LoadFrom(config.ApplicationAssemblyPath);
+                 var site = Assembly.LoadFrom(config.ApplicationAssemblyPath);
                 var types = site.GetTypes();
                 var httpApplicationType = types.Where(x => x.IsTypeOf<HttpApplication>()).First();
+                
+                var applicationRoot = Path.GetDirectoryName(typeof(Program).Assembly.Location);
+                FileRouteHandler.MapPath = path => path.Replace("~", applicationRoot);
+
                 host = MvcHost.Create(config.GetEndPoint(), config.VirtualDirectoryOrPrefix, Environment.CurrentDirectory, httpApplicationType);
 
                 host.Start();

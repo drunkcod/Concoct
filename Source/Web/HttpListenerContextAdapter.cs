@@ -1,7 +1,6 @@
 using System;
 using System.Net;
 using System.Web;
-using System.IO;
 using System.Web.Caching;
 
 namespace Concoct.Web
@@ -68,7 +67,10 @@ namespace Concoct.Web
             public override string GetUriPath() { return Request.RawUrl; }
 
             public override void SendKnownResponseHeader(int index, string value) {
-                SendUnknownResponseHeader(GetKnownRequestHeader(index), value);
+                if(index == HttpWorkerRequest.HeaderContentType)
+                    Response.ContentType = value;
+                else
+                    SendUnknownResponseHeader(GetKnownRequestHeader(index), value);
             }
 
             public override void SendResponseFromFile(IntPtr handle, long offset, long length)
@@ -81,17 +83,21 @@ namespace Concoct.Web
                 throw new NotImplementedException();
             }
 
-            public override void SendResponseFromMemory(byte[] data, int length)
-            {
-                throw new NotImplementedException();
+            public override void SendResponseFromMemory(byte[] data, int length) { 
+                Response.OutputStream.Write(data, 0, length); 
             }
 
             public override void SendStatus(int statusCode, string statusDescription) {
-                Response.Write(string.Format("{0} {1}", statusCode, statusDescription));
+                Response.Status = statusDescription;
+                Response.StatusCode = statusCode;
             }
 
             public override void SendUnknownResponseHeader(string name, string value) {
-                Response.Write(string.Format("{0}: {1}\r\n", name, value));
+                Response.Headers.Add(name, value);
+            }
+
+            public override string GetKnownRequestHeader(int index) {
+                return KnownHttpHeaders.FxHeaders[index].ToUpperInvariant();
             }
         }
 

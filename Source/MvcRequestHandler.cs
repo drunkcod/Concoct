@@ -22,7 +22,7 @@ namespace Concoct
                 var data = GetRouteData(httpContext);
                 var request = new RequestContext(httpContext, data);
                 var handler = data.RouteHandler.GetHttpHandler(request);
-                handler.ProcessRequest(httpContext.AsHttpContext());
+                    handler.ProcessRequest(httpContext.AsHttpContext());
             } catch (Exception e) {
                 httpContext.Response.StatusCode = 500;
                 httpContext.Response.Write(e.ToString());

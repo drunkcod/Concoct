@@ -1,12 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Reflection;
 using System.ServiceProcess;
-using System.Text.RegularExpressions;
-using System.Web;
-using Xlnt.Stuff;
 
 namespace Concoct
 {
@@ -27,7 +21,7 @@ namespace Concoct
             if(Environment.UserInteractive)
                 return new Program(Console.Out, config).RunInteractive();
             else {
-                using(var log = new StreamWriter(File.OpenWrite("Concoct.log")))
+                var log = new StreamWriter(File.OpenWrite(config.LogFile));
                 return new Program(log, config).RunService();
             }
         }
@@ -46,8 +40,7 @@ namespace Concoct
             catch(ConfigurationErrorException) {
                 Console.Error.WriteLine("Usage is {0} <assembly> <virtual-directory>", Path.GetFileName(typeof(Program).Assembly.Location));
             }
-            return 0; 
-
+            return 0;
         }
 
         int RunService() {          

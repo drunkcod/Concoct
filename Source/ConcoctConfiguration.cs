@@ -1,6 +1,6 @@
-﻿using System.Net;
+﻿using System.Collections.Generic;
+using System.Net;
 using System.Text.RegularExpressions;
-using System.Collections.Generic;
 
 namespace Concoct
 {
@@ -42,6 +42,7 @@ namespace Concoct
         public int Port;
         public IPAddress Host;
         public string VirtualDirectoryOrPrefix;
+        public string LogFile = "Concoct.log";
 
         public IPEndPoint GetEndPoint() { return new IPEndPoint(Host, Port); }
     }

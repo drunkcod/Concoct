@@ -13,9 +13,18 @@ namespace Concoct.Web
 
         public HttpListenerResponseAdapter(HttpListenerResponse response) {
             this.response = response;
+            this.response.ContentType = "text/html";
             this.response.ContentEncoding = new UTF8Encoding(false);
             this.outputStream = new MemoryStream();
-            ContentType = "text/html";
+        }
+
+        public override System.Collections.Specialized.NameValueCollection Headers {
+            get { return response.Headers; }
+        }
+
+        public override string Status {
+            get { return response.StatusDescription; }
+            set { response.StatusDescription = value; }
         }
 
         public override int StatusCode {
@@ -33,7 +42,7 @@ namespace Concoct.Web
 
         public override string ContentType {
             get { return response.ContentType; }
-            set { response.ContentType = value + "; charset=" + ContentEncoding.WebName; }
+            set { response.ContentType = value; }
         }
 
         public override string RedirectLocation {
