@@ -1,10 +1,10 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Web;
 using Concoct.Web.Routing;
 using Xlnt.Stuff;
-using System.IO;
 
 namespace Concoct
 {
@@ -23,7 +23,7 @@ namespace Concoct
                 var types = site.GetTypes();
                 var httpApplicationType = types.Where(x => x.IsTypeOf<HttpApplication>()).First();
                 
-                var applicationRoot = Path.GetDirectoryName(typeof(Program).Assembly.Location);
+                var applicationRoot = Path.GetDirectoryName(httpApplicationType.Assembly.Location);
                 FileRouteHandler.MapPath = path => path.Replace("~", applicationRoot);
 
                 host = MvcHost.Create(config.GetEndPoint(), config.VirtualDirectoryOrPrefix, Environment.CurrentDirectory, httpApplicationType);

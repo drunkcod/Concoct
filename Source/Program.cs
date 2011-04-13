@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Reflection;
 using System.ServiceProcess;
 
 namespace Concoct
@@ -17,6 +18,7 @@ namespace Concoct
         }
 
         static int Main(string[] args) {
+            Environment.CurrentDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             var config = ConcoctConfiguration.Parse(args);
             if(Environment.UserInteractive)
                 return new Program(Console.Out, config).RunInteractive();
