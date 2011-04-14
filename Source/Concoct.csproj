@@ -68,6 +68,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ApplicationBuilder.cs" />
+    <Compile Include="Web\BasicRequestHandler.cs" />
     <Compile Include="ConcoctApplication.cs" />
     <Compile Include="ConcoctConfiguration.cs" />
     <Compile Include="ConcoctServiceInstaller.cs">
@@ -75,7 +76,9 @@
     </Compile>
     <Compile Include="IConcoctApplication.cs" />
     <Compile Include="IHttpListenerRequestHandler.cs" />
+    <Compile Include="IO\IFileInfo.cs" />
     <Compile Include="IO\StreamExtensions.cs" />
+    <Compile Include="IO\SystemFileInfoAdapter.cs" />
     <Compile Include="TypeMixer.cs" />
     <Compile Include="MvcHost.cs" />
     <Compile Include="MvcRequestHandler.cs" />

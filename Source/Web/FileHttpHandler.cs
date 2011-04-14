@@ -6,23 +6,23 @@ namespace Concoct.Web
 {
     public class FileHttpHandler : IHttpHandler
     {
-        readonly string path;
+        readonly IFileInfo info;
 
-        public FileHttpHandler(string path) { 
-            this.path = path;
+        public FileHttpHandler(IFileInfo info) { 
+            this.info = info;
         }
 
         public bool IsReusable { get { return false; } }
 
         public void ProcessRequest(HttpContext context) {
-            var info = new FileInfo(path);
-            context.Response.ContentType = ContentTypeFromExtension(info.Extension);
+            var response = context.Response;
+            response.ContentType = MimeTypeFromExtension(info.Extension);
             using(var file = info.OpenRead())
-                file.CopyTo(context.Response.OutputStream);
-            context.Response.Flush();
+                file.CopyTo(response.OutputStream);
+            response.Flush();
         }
 
-        string ContentTypeFromExtension(string extension) {
+        string MimeTypeFromExtension(string extension) {
             switch(extension) {
                 case ".css": return "text/css";
                 default: return "application/octet-stream";

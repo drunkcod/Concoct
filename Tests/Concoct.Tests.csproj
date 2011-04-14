@@ -98,6 +98,7 @@
     <Compile Include="ProgramSpec.cs" />
     <Compile Include="TypeMixerSpec.cs" />
     <Compile Include="Web\ConcoctHttpServerUtilitySpec.cs" />
+    <Compile Include="Web\FileHttpHandlerSpec.cs" />
     <Compile Include="Web\HttpListenerContextAdapterSpec.cs" />
   </ItemGroup>
   <ItemGroup>

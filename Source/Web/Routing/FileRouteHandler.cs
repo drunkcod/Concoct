@@ -2,6 +2,7 @@
 using System.IO;
 using System.Web;
 using System.Web.Routing;
+using Concoct.IO;
 
 namespace Concoct.Web.Routing
 {
@@ -17,7 +18,7 @@ namespace Concoct.Web.Routing
 
         public IHttpHandler GetHttpHandler(RequestContext requestContext) {
             var file = requestContext.RouteData.Values["file"].ToString();
-            return new FileHttpHandler(Path.Combine(root, file));
+            return new FileHttpHandler(new SystemFileInfo(Path.Combine(root, file)));
         }
     }
 }

@@ -1,5 +1,4 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 
 namespace Concoct.IO
 {
@@ -8,24 +7,13 @@ namespace Concoct.IO
         const int DefaultBufferSize = 4096;
 
         public static void CopyTo(this Stream self, Stream target) {
-            var buffer = new byte[DefaultBufferSize];
+            CopyTo(self, target, DefaultBufferSize);
+        }
 
-            for(int bytes; (bytes = self.Read(buffer, 0, buffer.Length)) != 0;)
+        public static void CopyTo(this Stream self, Stream target, int bufferSize) {
+            var buffer = new byte[bufferSize];
+            for(int bytes; (bytes = self.Read(buffer, 0, bufferSize)) != 0;)
                 target.Write(buffer, 0, bytes);
         }
-
-        public static void CopyTo(this Stream self, Action<byte[], int, int> target) {
-            var buffer = new byte[DefaultBufferSize];
-
-            for(int bytes; (bytes = self.Read(buffer, 0, buffer.Length)) != 0;)
-                target(buffer, 0, bytes);
-        }
-
-        public static void CopyTo(this Stream self, Action<byte[]> target) {
-            var buffer = new byte[DefaultBufferSize];
-
-            for(int bytes; (bytes = self.Read(buffer, 0, buffer.Length)) != 0;)
-                target(buffer);
-        }
-}
+    }
 }
