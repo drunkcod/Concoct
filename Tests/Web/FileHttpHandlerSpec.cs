@@ -11,12 +11,16 @@ namespace Concoct.Web
     {
         [Row(".???", "application/octet-stream")
         ,Row(".css", "text/css")
+        ,Row(".xml", "text/xml")
+        ,Row(".txt", "text/plain")
+        ,Row(".gif", "image/gif")
+        ,Row(".png", "image/png")
+        ,Row(".jpg", "image/jpeg")
         ,DisplayAs("{0} => {1}")]
         public void content_type(string extension, string mimeType) {
-            var message = "Hello World!";
             var fileInfo = new Moq.Mock<IFileInfo>();
             fileInfo.Setup(x => x.Extension).Returns(extension);
-            fileInfo.Setup(x => x.OpenRead()).Returns(StreamWith(message));
+            fileInfo.Setup(x => x.OpenRead()).Returns(StreamWith("<this doesn't matter>"));
 
             WithResponseFrom(fileInfo.Object, response => {
                 Verify.That(() => response.ContentType == mimeType);

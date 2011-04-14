@@ -1,5 +1,4 @@
-﻿using System.IO;
-using System.Web;
+﻿using System.Web;
 using Concoct.IO;
 
 namespace Concoct.Web
@@ -25,6 +24,11 @@ namespace Concoct.Web
         string MimeTypeFromExtension(string extension) {
             switch(extension) {
                 case ".css": return "text/css";
+                case ".gif": return "image/gif";
+                case ".jpg": return "image/jpeg";
+                case ".png": return "image/png";
+                case ".txt": return "text/plain";
+                case ".xml": return "text/xml";
                 default: return "application/octet-stream";
             }
         }
