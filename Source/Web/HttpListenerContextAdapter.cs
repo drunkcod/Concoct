@@ -119,10 +119,15 @@ namespace Concoct.Web
         public override HttpServerUtilityBase Server { get { return server; } }
         public override Cache Cache { get { return cache; } }
 
-        public HttpContext AsHttpContext()
+        public void AsHttpContext(Action<HttpContext> action)
         {
             var worker = new HttpListenerWorkerRequest(this);
-            return new HttpContext(worker);
+            var context = new HttpContext(worker);
+            try {
+                action(context);
+            } finally {
+                context.Response.Flush();
+            }
         }
 
         public static Func<Uri,string> MakeRelativeUriFunc(Uri request, string virtualPath){

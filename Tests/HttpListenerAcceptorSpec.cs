@@ -50,8 +50,7 @@ namespace Concoct
                 try {
                     listener.Start();
                     var request = WebRequest.Create("http://localhost:8080/");
-                    var async = request.BeginGetResponse(null, null);
-                    var response = request.EndGetResponse(async);
+                    var response = request.GetResponse();
                     Verify.That(() => response.ContentLength == message.Length);
                     using(var reader = new StreamReader(response.GetResponseStream()))
                         Verify.That(() => reader.ReadToEnd() == message);

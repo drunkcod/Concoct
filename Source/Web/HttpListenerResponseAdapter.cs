@@ -8,7 +8,7 @@ namespace Concoct.Web
     class HttpListenerResponseAdapter : HttpResponseBase
     {
         readonly HttpListenerResponse response;
-        MemoryStream outputStream;
+        readonly MemoryStream outputStream;
         TextWriter output;
 
         public HttpListenerResponseAdapter(HttpListenerResponse response) {

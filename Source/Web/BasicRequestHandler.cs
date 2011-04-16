@@ -18,7 +18,7 @@ namespace Concoct.Web
 
         public void Process(HttpListenerContext context) {
             var adapter = new HttpListenerContextAdapter(context, virtualPath, physicalPath);
-            handler.ProcessRequest(adapter.AsHttpContext());
+            adapter.AsHttpContext(handler.ProcessRequest);
             adapter.Response.End();
         }
     }

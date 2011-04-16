@@ -18,7 +18,6 @@ namespace Concoct.Web
             response.ContentType = MimeTypeFromExtension(info.Extension);
             using(var file = info.OpenRead())
                 file.CopyTo(response.OutputStream);
-            response.Flush();
         }
 
         string MimeTypeFromExtension(string extension) {
