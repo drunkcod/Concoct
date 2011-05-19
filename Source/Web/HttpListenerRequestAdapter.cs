@@ -57,6 +57,7 @@ namespace Concoct.Web
                 return form;
             }
         }
+
         public override Uri Url { get {return request.Url; } }
         public override NameValueCollection QueryString { get { return request.QueryString; } }
         public override HttpFileCollectionBase Files { get { return new EmptyHttpFileCollection(); } }
