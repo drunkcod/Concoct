@@ -9,7 +9,7 @@
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Concoct</RootNamespace>
-    <AssemblyName>Concoct.Tests</AssemblyName>
+    <AssemblyName>Concoct.Specs</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <OutputPath>$(SolutionDir)\Build</OutputPath>
@@ -95,6 +95,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="HttpListenerAcceptorSpec.cs" />
+    <Compile Include="MultiPartStreamSpec.cs" />
     <Compile Include="ProgramSpec.cs" />
     <Compile Include="TypeMixerSpec.cs" />
     <Compile Include="Web\ConcoctHttpServerUtilitySpec.cs" />

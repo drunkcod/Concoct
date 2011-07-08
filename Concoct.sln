@@ -3,11 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Concoct", "Source\Concoct.csproj", "{DFCA252B-64BA-40CB-8CE1-C8750C4526C7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Concoct.Tests", "Tests\Concoct.Tests.csproj", "{E426A541-6B84-43A2-A6EC-3AAB3A8D3930}"
-EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Concoct.Tests.FSharp", "Tests\FSharp\Concoct.Tests.FSharp.fsproj", "{E035818C-FCEB-4880-9223-FE54015AB884}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Concoct.Samples.ServiceDashboard", "Samples\ServiceDashboard\Concoct.Samples.ServiceDashboard.csproj", "{B0BE49B5-99CA-4F47-96E0-50828FF8452F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Concoct.Specs", "Specs\Concoct.Specs.csproj", "{E426A541-6B84-43A2-A6EC-3AAB3A8D3930}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -23,14 +19,6 @@ Global
 		{E426A541-6B84-43A2-A6EC-3AAB3A8D3930}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E426A541-6B84-43A2-A6EC-3AAB3A8D3930}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E426A541-6B84-43A2-A6EC-3AAB3A8D3930}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E035818C-FCEB-4880-9223-FE54015AB884}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E035818C-FCEB-4880-9223-FE54015AB884}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E035818C-FCEB-4880-9223-FE54015AB884}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E035818C-FCEB-4880-9223-FE54015AB884}.Release|Any CPU.Build.0 = Release|Any CPU
-		{B0BE49B5-99CA-4F47-96E0-50828FF8452F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B0BE49B5-99CA-4F47-96E0-50828FF8452F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B0BE49B5-99CA-4F47-96E0-50828FF8452F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B0BE49B5-99CA-4F47-96E0-50828FF8452F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

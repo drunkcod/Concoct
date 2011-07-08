@@ -7,7 +7,7 @@ namespace Concoct
 {
     public class HttpListenerAcceptor
     {
-        struct HttpListenerAcceptorContext
+        class HttpListenerAcceptorContext
         {
             public HttpListenerAcceptor Listener;
             public int Offset;
