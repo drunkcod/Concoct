@@ -178,11 +178,7 @@ namespace Concoct
             public void sample_contains_two_parts() {
                 var data = new MultiPartStream(Boundry);
                 var parts = 0;
-                data.PartReady += (s, e) => {
-                    ++parts;
-                    Console.WriteLine(Encoding.UTF8.GetString(e.Part.Body));
-                    Console.WriteLine("-----------");
-                };
+                data.PartReady += (s, e) => ++parts;
                 data.Read( CreateStream(MultiPartSampleFormdataAndSingleFile));
                 Verify.That(() => parts == 2);
             }
