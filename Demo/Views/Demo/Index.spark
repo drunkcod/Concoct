@@ -1,11 +1,18 @@
 ﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<use namespace="Concoct.Demo.Models" />
+<viewdata model="DemoModel" />
+<var Model="ViewData.Model" />
 <html xmlns="http://www.w3.org/1999/xhtml" >
 <head>
-    <title>Index.spark</title>
+    <title>Concoct Demo</title>
 </head>
 <body>
     <div>
-		Hello Concoct World!
+        <form method="post" enctype="multipart/form-data" id="file-upload">
+            <input type="file" name="files" />
+            <input type="submit" />
+        </form>
+        <div each="var item in Model.Files">${item.FileName} (${item.ContentLength} bytes)</div>
     </div>
 </body>
 </html>

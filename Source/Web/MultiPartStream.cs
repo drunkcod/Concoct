@@ -2,9 +2,8 @@
 using System.Collections.Specialized;
 using System.IO;
 using System.Text;
-using Cone;
 
-namespace Concoct
+namespace Concoct.Web
 {
     class MultiPartBoundryBuffer 
     {
@@ -66,7 +65,7 @@ namespace Concoct
 
     }
 
-    class MultiPartStream 
+    public class MultiPartStream 
     {
         const byte Dash = (byte)'-';
         const byte CR = 13;
@@ -126,9 +125,17 @@ namespace Concoct
         }
 
         MimePart ReadPart(byte[] bytes, int headerEndPosition) {
+            var headers = new NameValueCollection();
+            using(var headerReader = new StreamReader(new MemoryStream(bytes, 0, headerEndPosition), Encoding.ASCII)) {
+                for(string line; (line = headerReader.ReadLine()) != "";) {
+                    var parts = line.Split(':');
+                    headers.Add(parts[0], parts[1]);
+                }
+            }
             var body = new byte[bytes.Length - headerEndPosition];
             Array.Copy(bytes, headerEndPosition, body, 0, body.Length);
             return new MimePart {
+                Headers = headers,
                 Body = body
             };
         }
@@ -141,47 +148,5 @@ namespace Concoct
         }
 
         Encoding Encoding { get { return Encoding.ASCII; } }
-    }
-
-    [Describe(typeof(MultiPartStream))]
-    public class MultiPartStreamSpec
-    {
-        static Stream CreateStream(params string[] lines) {
-            var stream = new MemoryStream();
-            var writer = new StreamWriter(stream);
-            foreach(var line in lines)
-                writer.WriteLine(line);
-            writer.Flush();
-            stream.Position = 0;
-            return stream;
-        }
-
-        [Context("multipart/form-data sample with field and file")]
-        public class MultiPartSampleFormdataAndSingleFileContext 
-        {
-            //http://www.w3.org/TR/html401/interact/forms.html#h-17.13.4.2
-            readonly string[] MultiPartSampleFormdataAndSingleFile = new[] {
-                "",
-                "--AaB03x",
-                "Content-Disposition: form-data; name=\"submit-name\"",
-                "",
-                "Larry",
-                "--AaB03x",
-                "Content-Disposition: form-data; name=\"files\"; filename=\"file1.txt\"",
-                "Content-Type: text/plain",
-                "",
-                "... contents of file1.txt ...",
-                "--AaB03x--"
-            };
-            const string Boundry = "AaB03x";
-
-            public void sample_contains_two_parts() {
-                var data = new MultiPartStream(Boundry);
-                var parts = 0;
-                data.PartReady += (s, e) => ++parts;
-                data.Read( CreateStream(MultiPartSampleFormdataAndSingleFile));
-                Verify.That(() => parts == 2);
-            }
-        }
     }
 }
