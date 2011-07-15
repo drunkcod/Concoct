@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Web;
 
@@ -29,24 +30,40 @@ namespace Concoct.Web
         public override string FileName {
             get { return name; }
         }
+
+        public override void SaveAs(string filename) {
+            File.WriteAllBytes(filename, bytes);
+        }
     }
 
     public class BasicHttpFileCollection : HttpFileCollectionBase
     {
+        readonly List<string> allKeys = new List<string>();
         readonly List<HttpPostedFileBase> files = new List<HttpPostedFileBase>();
-        public void Add(HttpPostedFileBase file) {
+        
+        public void Add(string key, HttpPostedFileBase file) {
             files.Add(file);
+            allKeys.Add(key);
         }
 
-        public override int Count { get { return files.Count; } }
-        public override System.Collections.IEnumerator GetEnumerator() { return files.Select(x => x.FileName).GetEnumerator(); }
+        public override string[] AllKeys {
+            get { return allKeys.ToArray(); }
+        }
+
+        public override int Count 
+            { get { return files.Count; } 
+        }
+        
+        public override System.Collections.IEnumerator GetEnumerator() { 
+            return allKeys.GetEnumerator(); 
+        }
 
         public override HttpPostedFileBase this[int index] {
             get { return files[index]; }
         }
 
         public override HttpPostedFileBase this[string name] {
-            get { return files.Find(x => x.FileName == name); }
+            get { return files[allKeys.IndexOf(name)]; }
         }
     }
 }

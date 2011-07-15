@@ -77,15 +77,18 @@ namespace Concoct.Web
         void ParseMultiPart(IRequestStream request) {
             var multiPartStream = new MultiPartStream(GetBoundary(request.ContentType));
             var filenamePattern = new Regex("filename=\"(?<filename>.+?)\"");
+            var namePattern = new Regex("name=\"(?<name>.+?)\"");
             multiPartStream.PartReady += (sender, e) => {
-                var hasFileName = filenamePattern.Match(e.Part.Headers["Content-Disposition"]);
+                var disposition = e.Part.Headers["Content-Disposition"];
+                var name = namePattern.Match(disposition).Groups["name"].Value;
+                var hasFileName = filenamePattern.Match(disposition);
                 if(hasFileName.Success)
-                    files.Add(new BasicHttpPostedFile(
+                    files.Add(name, new BasicHttpPostedFile(
                         hasFileName.Groups["filename"].Value, 
                         e.Part.Headers["Content-Type"],
                         e.Part.Body));
                 else
-                    fields.Add(Fields.Count.ToString(), Encoding.UTF8.GetString(e.Part.Body));
+                    fields.Add(name, Encoding.UTF8.GetString(e.Part.Body));
             };
             multiPartStream.Read(request.InputStream);
         }

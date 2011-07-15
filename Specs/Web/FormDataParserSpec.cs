@@ -79,6 +79,10 @@ namespace Concoct.Web
                 Verify.That(() => FormData.Fields.Count == 1);
             }
 
+            public void field_matches_sample() {
+                Verify.That(() => FormData.Fields["submit-name"] == "Larry");
+            }
+
             public void contains_a_file() {
                 Verify.That(() => FormData.Files.Count == 1);
             }
