@@ -1,9 +1,10 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Web;
 
 namespace Concoct.Web
 {
-    class BasicHttpPostedFile : HttpPostedFileBase
+    public class BasicHttpPostedFile : HttpPostedFileBase
     {
         readonly string name;
         readonly string contentType;
@@ -30,7 +31,7 @@ namespace Concoct.Web
         }
     }
 
-    class BasicHttpFileCollection : HttpFileCollectionBase
+    public class BasicHttpFileCollection : HttpFileCollectionBase
     {
         readonly List<HttpPostedFileBase> files = new List<HttpPostedFileBase>();
         public void Add(HttpPostedFileBase file) {
@@ -38,10 +39,14 @@ namespace Concoct.Web
         }
 
         public override int Count { get { return files.Count; } }
-        public override System.Collections.IEnumerator GetEnumerator() { return files.GetEnumerator(); }
+        public override System.Collections.IEnumerator GetEnumerator() { return files.Select(x => x.FileName).GetEnumerator(); }
 
         public override HttpPostedFileBase this[int index] {
             get { return files[index]; }
+        }
+
+        public override HttpPostedFileBase this[string name] {
+            get { return files.Find(x => x.FileName == name); }
         }
     }
 }

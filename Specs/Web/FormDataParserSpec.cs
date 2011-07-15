@@ -97,5 +97,13 @@ namespace Concoct.Web
             }
 
         }
+
+        public void fails_to_parse_if_content_type_is_null() {
+            var formData = new FormDataParser();
+            var request = new SimpleRequestStream();
+            request.ContentType = null;
+            Verify.That(() => formData.ParseFormAndFiles(request) == false);
+
+        }
     }
 }

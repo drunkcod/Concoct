@@ -48,12 +48,15 @@ namespace Concoct.Web
 
         public bool ParseFormAndFiles(IRequestStream request) {
             if(HasResult) return false;
-
             fields = new NameValueCollection();
             files = new BasicHttpFileCollection();
-            if(request.ContentType.StartsWith(ContentTypeFormUrlEncoded))
+            var conentType = request.ContentType;
+            if(conentType == null)
+                return false;
+
+            if(conentType.StartsWith(ContentTypeFormUrlEncoded))
                 ParseFormUrlEncoded(request);
-            else if(request.ContentType.StartsWith(ContentTypeMultipartFormData))
+            else if(conentType.StartsWith(ContentTypeMultipartFormData))
                 ParseMultiPart(request);
             else 
                 return false;

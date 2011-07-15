@@ -85,7 +85,7 @@
     <Compile Include="HttpListenerAcceptor.cs" />
     <Compile Include="Version.cs" />
     <Compile Include="Web\ConcoctHttpServerUtility.cs" />
-    <Compile Include="Web\BasicFileCollection.cs" />
+    <Compile Include="Web\BasicHttpFileCollection.cs" />
     <Compile Include="Web\FileHttpHandler.cs" />
     <Compile Include="Web\FormDataParser.cs" />
     <Compile Include="Web\HttpListenerContextAdapter.cs" />
