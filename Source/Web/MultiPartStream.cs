@@ -87,6 +87,7 @@ namespace Concoct.Web
         public event EventHandler<MimeBodyPartDataEventArgs> PartReady;
 
         public void Read(Stream stream) {
+            EnsureStartingBoundry(stream);
             var partData = new MemoryStream();
             var boundry = new MultiPartBoundryBuffer(boundryBytes.Length, partData.WriteByte);
             int headerEndPosition = 0;
@@ -118,6 +119,20 @@ namespace Concoct.Web
             }
         }
 
+        void EnsureStartingBoundry(Stream stream) {
+            var header = new byte[boundryBytes.Length];
+            if(stream.Read(header, 0, header.Length) != header.Length
+            || !ElementEquals(header, boundryBytes, 0, 2, header.Length - 2))
+                throw new InvalidOperationException("invalid header");
+        }
+
+        bool ElementEquals(byte[] x, byte[] y, int offsetX, int offsetY, int count) {
+            for(var i = 0; i != count; ++i)
+                if(x[offsetX + i] != y[offsetY + i])
+                    return false;
+            return true;
+        }
+
         byte ReadByte(Stream stream) {
             var b = stream.ReadByte();      
             if(b < 0) throw new InvalidDataException();
@@ -129,7 +144,7 @@ namespace Concoct.Web
             using(var headerReader = new StreamReader(new MemoryStream(bytes, 0, headerEndPosition), Encoding.ASCII)) {
                 for(string line; (line = headerReader.ReadLine()) != "";) {
                     var parts = line.Split(':');
-                    headers.Add(parts[0], parts[1]);
+                    headers.Add(parts[0], parts[1].Trim());
                 }
             }
             var body = new byte[bytes.Length - headerEndPosition];

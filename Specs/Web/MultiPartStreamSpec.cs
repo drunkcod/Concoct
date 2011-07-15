@@ -1,14 +1,13 @@
 ﻿using System.IO;
 using Cone;
-using Concoct.Web;
 
 namespace Concoct.Web
 {
     class MultiPartFormDataSample 
     {
         //http://www.w3.org/TR/html401/interact/forms.html#h-17.13.4.2
+        public const string ContentsOfFile1 = "... contents of file1.txt ...";
         public static readonly string[] MultiPartSampleFormdataAndSingleFile = new[] {
-                "",
                 "--AaB03x",
                 "Content-Disposition: form-data; name=\"submit-name\"",
                 "",
@@ -17,7 +16,7 @@ namespace Concoct.Web
                 "Content-Disposition: form-data; name=\"files\"; filename=\"file1.txt\"",
                 "Content-Type: text/plain",
                 "",
-                "... contents of file1.txt ...",
+                ContentsOfFile1,
                 "--AaB03x--"
             };
 

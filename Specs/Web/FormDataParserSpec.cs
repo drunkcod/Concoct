@@ -83,6 +83,19 @@ namespace Concoct.Web
                 Verify.That(() => FormData.Files.Count == 1);
             }
 
+            [DisplayAs("the file is name file1.txt")]
+            public void file_name() {
+                Verify.That(() => FormData.Files[0].FileName == "file1.txt");
+            }
+
+            public void file_content_type_matches_sample() {
+                Verify.That(() => FormData.Files[0].ContentType == "text/plain");
+            }
+
+            public void file_content_length_matches_sample() {
+                Verify.That(() => FormData.Files[0].ContentLength == MultiPartFormDataSample.ContentsOfFile1.Length);
+            }
+
         }
     }
 }

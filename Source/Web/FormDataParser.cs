@@ -4,6 +4,7 @@ using System.IO;
 using System.Net;
 using System.Text;
 using System.Web;
+using System.Text.RegularExpressions;
 
 namespace Concoct.Web
 {
@@ -72,9 +73,14 @@ namespace Concoct.Web
 
         void ParseMultiPart(IRequestStream request) {
             var multiPartStream = new MultiPartStream(GetBoundary(request.ContentType));
+            var filenamePattern = new Regex("filename=\"(?<filename>.+?)\"");
             multiPartStream.PartReady += (sender, e) => {
-                if(e.Part.Headers["Content-Disposition"].Contains("filename="))
-                    files.Add(null);
+                var hasFileName = filenamePattern.Match(e.Part.Headers["Content-Disposition"]);
+                if(hasFileName.Success)
+                    files.Add(new BasicHttpPostedFile(
+                        hasFileName.Groups["filename"].Value, 
+                        e.Part.Headers["Content-Type"],
+                        e.Part.Body));
                 else
                     fields.Add(Fields.Count.ToString(), Encoding.UTF8.GetString(e.Part.Body));
             };
