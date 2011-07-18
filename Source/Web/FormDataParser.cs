@@ -53,7 +53,7 @@ namespace Concoct.Web
             if(conentType.StartsWith(ContentTypeFormUrlEncoded))
                 WithBodyBytes(request, ParseFormUrlEncoded);
             else if(conentType.StartsWith(ContentTypeMultipartFormData))
-                WithBodyBytes(request, (bytes, count) => ParseMultiPart(request.ContentType, bytes, count));
+                ParseMultiPart(request);
             else 
                 return false;
 
@@ -68,8 +68,8 @@ namespace Concoct.Web
             }
         }
 
-        void ParseMultiPart(string contentType, byte[] bytes, int count) {
-            var multiPartStream = new MultiPartStream(GetBoundary(contentType));
+        void ParseMultiPart(IRequestStream request) {
+            var multiPartStream = new MultiPartStream(GetBoundary(request.ContentType));
             multiPartStream.PartReady += (sender, e) => {
                 var disposition = e.Part.Headers["Content-Disposition"];
                 var name = NamePattern.Match(disposition).Groups["name"].Value;
@@ -82,8 +82,14 @@ namespace Concoct.Web
                 else
                     fields.Add(name, Encoding.UTF8.GetString(e.Part.Body));
             };
-            var data = new MemoryStream(bytes, 0, count, false);
-            multiPartStream.Read(data);
+            var buffer = new byte[1 << 10];
+            for(int bytesRead = 0, wanted = (int)request.ContentLength64, block; 
+                bytesRead < wanted
+                && (block = request.InputStream.Read(buffer, 0, Math.Min(wanted - bytesRead, buffer.Length))) != 0;) 
+            {
+                bytesRead += block;
+                multiPartStream.Process(buffer, 0, block);
+            }
         }
 
         void WithBodyBytes(IRequestStream request, Action<byte[], int> action) {

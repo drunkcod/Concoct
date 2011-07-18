@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Diagnostics;
 using System.IO;
 using System.Text;
 
@@ -60,7 +61,6 @@ namespace Concoct.Web
     {
         public NameValueCollection Headers;
         public byte[] Body;
-
     }
 
     public class MultiPartStream 
@@ -68,71 +68,138 @@ namespace Concoct.Web
         const byte Dash = (byte)'-';
         const byte CR = 13;
         const byte LF = 10;
-        readonly byte[] LineSeparator = new[]{ CR, LF };
-        readonly byte[] HeaderSeparator = new[]{ CR, LF, CR, LF };
-        readonly byte[] BoundaryPrefix = new[]{ CR, LF, Dash, Dash };
-        
-        readonly byte[] boundaryBytes;
+        static readonly byte[] LineSeparator = new[]{ CR, LF };
+        static readonly byte[] HeaderSeparator = new[]{ CR, LF, CR, LF };
+        static readonly byte[] BoundaryPrefix = new[]{ CR, LF, Dash, Dash };
+        IMultiPartStreamState state;
+
+        interface IMultiPartStreamState 
+        {
+            bool IsFinished { get; }
+            IMultiPartStreamState ProcessByte(byte value);
+        }
+
+        class HeaderReader : IMultiPartStreamState
+        {
+            readonly byte[] boundaryBytes;        
+            readonly byte[] header;
+            readonly IMultiPartStreamState next;
+            int position;
+
+            public HeaderReader(byte[] boundaryBytes, IMultiPartStreamState next) {
+                this.boundaryBytes = boundaryBytes;
+                this.header = new byte[boundaryBytes.Length];
+                this.next = next;
+            }
+
+            public bool IsFinished { get { return false; } }
+
+            public IMultiPartStreamState ProcessByte(byte value) {
+                header[position++] = value;
+                if(position < boundaryBytes.Length)
+                    return this;               
+                
+                if(!ElementEquals(header, boundaryBytes, 0, 2, header.Length - 2))
+                    throw new InvalidOperationException("invalid header");
+                
+                return next;
+            }
+
+            bool ElementEquals(byte[] x, byte[] y, int offsetX, int offsetY, int count) {
+                for(var i = 0; i != count; ++i)
+                    if(x[offsetX + i] != y[offsetY + i])
+                        return false;
+                return true;
+            }
+        }
+
+        class BodyReader : IMultiPartStreamState
+        {
+            enum State {
+                Buffering, 
+                AtBoundary
+            }
+
+            readonly MemoryStream partData = new MemoryStream();
+            readonly MultiPartBoundaryBuffer boundry;
+            readonly byte[] boundaryBytes;
+            readonly Action<byte[], int> partReady;
+            State state;
+            int headerEndPosition;
+            bool isFinished;
+
+            public BodyReader(byte[] boundaryBytes, Action<byte[], int> partReady) {
+                this.boundaryBytes = boundaryBytes;
+                this.boundry = new MultiPartBoundaryBuffer(boundaryBytes.Length, partData.WriteByte);
+                this.state = State.Buffering;
+                this.partReady = partReady;
+            }
+
+            public bool IsFinished { get { return isFinished; } }
+
+            public IMultiPartStreamState ProcessByte(byte value) {
+                boundry.WriteByte(value);
+                switch(state) {
+                    case State.Buffering:               
+                        if(headerEndPosition == 0 && boundry.EndsWith(HeaderSeparator))
+                        headerEndPosition = (int)partData.Position + boundry.Size;
+                        if(boundry.Matches(boundaryBytes)) {
+                            boundry.Discard();
+                            state = State.AtBoundary;
+                        }
+                        break;
+
+                    case State.AtBoundary:
+                        if(boundry.Size < 2)
+                            break;
+
+                        var partSeparator = boundry.Matches(LineSeparator);
+                        isFinished = boundry.Matches(Dash, Dash);
+                        Debug.Assert(partSeparator || isFinished);
+
+                        boundry.Discard();
+                        if(partData.Position != 0) {
+                            partReady(partData.ToArray(), headerEndPosition);
+                            partData.Position = 0;
+                            headerEndPosition = 0;
+                        }
+                        state = State.Buffering;
+                        break;
+                }
+                return this;
+            }
+        }
 
         public MultiPartStream(string boundary) {
             var boundryLength = Encoding.GetByteCount(boundary);
-            boundaryBytes = new byte[BoundaryPrefix.Length + boundryLength];
+            var boundaryBytes = new byte[BoundaryPrefix.Length + boundryLength];
            
             BoundaryPrefix.CopyTo(boundaryBytes, 0);
             Encoding.GetBytes(boundary, 0, boundary.Length, boundaryBytes, BoundaryPrefix.Length);
+
+            var body = new BodyReader(boundaryBytes, (bytes, headerEndPosition) => OnPartReady(ReadPart(bytes, headerEndPosition)));
+            state = new HeaderReader(boundaryBytes, body);
         }
 
         public event EventHandler<MimeBodyPartDataEventArgs> PartReady;
 
         public void Read(Stream stream) {
-            EnsureStartingBoundary(stream);
-            var partData = new MemoryStream();
-            var boundry = new MultiPartBoundaryBuffer(boundaryBytes.Length, partData.WriteByte);
-            int headerEndPosition = 0;
-            for(;;) {
-                boundry.WriteByte(ReadByte(stream));
-               
-                if(headerEndPosition == 0 && boundry.EndsWith(HeaderSeparator))
-                    headerEndPosition = (int)partData.Position + boundry.Size;
-                if(boundry.Matches(boundaryBytes)) {
-                    boundry.Discard();
-                    boundry.WriteByte(ReadByte(stream));
-                    boundry.WriteByte(ReadByte(stream));
+            while(!state.IsFinished)
+                ProcessByte(ReadByte(stream)); 
+        }
 
-                    var partSeparator = boundry.Matches(LineSeparator);
-                    var lastPart = boundry.Matches(Dash, Dash);
+        public void Process(byte[] bytes, int offset, int count) {
+            for(var i = 0; i != count && !state.IsFinished; ++i)
+                ProcessByte(bytes[offset + i]);
+        }
 
-                    if(partSeparator || lastPart) {
-                        boundry.Discard();
-                        if(partData.Position != 0) {
-                            OnPartReady(ReadPart(partData.ToArray(), headerEndPosition));
-                            partData.Position = 0;
-                            headerEndPosition = 0;
-                        }
-                    }
-                    if(lastPart)
-                        return;
-                }
-            }
+        void ProcessByte(byte value) {
+            state = state.ProcessByte(value);
         }
 
         public static KeyValuePair<string, string> ParseHeader(string input) {
             var boundary = input.IndexOf(':');
             return new KeyValuePair<string,string>(input.Substring(0, boundary), input.Substring(boundary + 1).Trim());
-        }
-
-        void EnsureStartingBoundary(Stream stream) {
-            var header = new byte[boundaryBytes.Length];
-            if(stream.Read(header, 0, header.Length) != header.Length
-            || !ElementEquals(header, boundaryBytes, 0, 2, header.Length - 2))
-                throw new InvalidOperationException("invalid header");
-        }
-
-        bool ElementEquals(byte[] x, byte[] y, int offsetX, int offsetY, int count) {
-            for(var i = 0; i != count; ++i)
-                if(x[offsetX + i] != y[offsetY + i])
-                    return false;
-            return true;
         }
 
         byte ReadByte(Stream stream) {
