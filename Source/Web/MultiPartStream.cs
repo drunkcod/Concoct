@@ -6,14 +6,15 @@ using System.Text;
 
 namespace Concoct.Web
 {
-    class MultiPartBoundryBuffer 
+    class MultiPartBoundaryBuffer 
     {
         readonly byte[] bytes;
         readonly Action<byte> overflow;
         int position;
         int size;
+        byte lastByte;
 
-        public MultiPartBoundryBuffer(int size, Action<byte> overflow) {
+        public MultiPartBoundaryBuffer(int size, Action<byte> overflow) {
             this.bytes = new byte[size];
             this.overflow = overflow;
         }
@@ -29,29 +30,25 @@ namespace Concoct.Web
                 overflow(bytes[position]);
             else 
                 ++size;
-            bytes[position] = value;
+            lastByte = bytes[position] = value;
             position = (position + 1) % bytes.Length;
         }
 
         public bool Matches(params byte[] other) {
-            if(size != other.Length)
-                return false;
-            for(var i = 0; i != size; ++i)
-                if(bytes[Index(i)] != other[i])
-                    return false;
-            return true;
+            return size == other.Length
+                && EndsWith(other);
         }
 
         public bool EndsWith(params byte[] tail) {
-            if(size < tail.Length)
+            if(size < tail.Length || lastByte != tail[tail.Length - 1])
                 return false;
-            for(var i = 0; i != tail.Length; ++i)
-                if(bytes[Index(size - tail.Length + i)] != tail[i])
+            for(int i = 0, offset = size - tail.Length; i != tail.Length; ++i)
+                if(bytes[Index(offset + i)] != tail[i])
                     return false;
             return true;
         }
 
-        int Index(int x) {  return (bytes.Length + position - size + x) % bytes.Length; } 
+        int Index(int x) {  return (bytes.Length + position - size + x) % bytes.Length; }
     }
 
     public class MimeBodyPartDataEventArgs : EventArgs 
@@ -77,12 +74,12 @@ namespace Concoct.Web
         
         readonly byte[] boundaryBytes;
 
-        public MultiPartStream(string boundry) {
-            var boundryLength = Encoding.GetByteCount(boundry);
+        public MultiPartStream(string boundary) {
+            var boundryLength = Encoding.GetByteCount(boundary);
             boundaryBytes = new byte[BoundaryPrefix.Length + boundryLength];
            
             BoundaryPrefix.CopyTo(boundaryBytes, 0);
-            Encoding.GetBytes(boundry, 0, boundry.Length, boundaryBytes, BoundaryPrefix.Length);
+            Encoding.GetBytes(boundary, 0, boundary.Length, boundaryBytes, BoundaryPrefix.Length);
         }
 
         public event EventHandler<MimeBodyPartDataEventArgs> PartReady;
@@ -90,11 +87,10 @@ namespace Concoct.Web
         public void Read(Stream stream) {
             EnsureStartingBoundary(stream);
             var partData = new MemoryStream();
-            var boundry = new MultiPartBoundryBuffer(boundaryBytes.Length, partData.WriteByte);
+            var boundry = new MultiPartBoundaryBuffer(boundaryBytes.Length, partData.WriteByte);
             int headerEndPosition = 0;
             for(;;) {
-                var value = ReadByte(stream);
-                boundry.WriteByte(value);
+                boundry.WriteByte(ReadByte(stream));
                
                 if(headerEndPosition == 0 && boundry.EndsWith(HeaderSeparator))
                     headerEndPosition = (int)partData.Position + boundry.Size;

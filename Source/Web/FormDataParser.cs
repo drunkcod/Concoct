@@ -3,8 +3,8 @@ using System.Collections.Specialized;
 using System.IO;
 using System.Net;
 using System.Text;
-using System.Web;
 using System.Text.RegularExpressions;
+using System.Web;
 
 namespace Concoct.Web
 {
@@ -19,6 +19,8 @@ namespace Concoct.Web
     {
         public const string ContentTypeFormUrlEncoded = "application/x-www-form-urlencoded";
         public const string ContentTypeMultipartFormData = "multipart/form-data";
+        static readonly Regex FilenamePattern = new Regex("filename=\"(?<filename>.+?)\"", RegexOptions.Compiled);
+        static readonly Regex NamePattern = new Regex("name=\"(?<name>.+?)\"", RegexOptions.Compiled);
 
         class HttpListenerRequestStreamAdapter : IRequestStream
         {
@@ -55,33 +57,29 @@ namespace Concoct.Web
                 return false;
 
             if(conentType.StartsWith(ContentTypeFormUrlEncoded))
-                ParseFormUrlEncoded(request);
+                WithBodyBytes(request, ParseFormUrlEncoded);
             else if(conentType.StartsWith(ContentTypeMultipartFormData))
-                ParseMultiPart(request);
+                WithBodyBytes(request, (bytes, count) => ParseMultiPart(request.ContentType, bytes, count));
             else 
                 return false;
 
             return true;
         }
 
-        void ParseFormUrlEncoded(IRequestStream request) {
-            var bytes = new byte[request.ContentLength64];
-            var bytesRead = request.InputStream.Read(bytes, 0, bytes.Length);
-            var data = HttpUtility.UrlDecode(bytes, 0, bytesRead, Encoding.UTF8);
+        void ParseFormUrlEncoded(byte[] bytes, int count) {
+            var data = HttpUtility.UrlDecode(bytes, 0, count, Encoding.UTF8);
             foreach(var item in data.Split(new []{ '&' }, StringSplitOptions.RemoveEmptyEntries)){
                 var parts = item.Split('=');
                 fields.Add(parts[0], parts[1]);
             }
         }
 
-        void ParseMultiPart(IRequestStream request) {
-            var multiPartStream = new MultiPartStream(GetBoundary(request.ContentType));
-            var filenamePattern = new Regex("filename=\"(?<filename>.+?)\"");
-            var namePattern = new Regex("name=\"(?<name>.+?)\"");
+        void ParseMultiPart(string contentType, byte[] bytes, int count) {
+            var multiPartStream = new MultiPartStream(GetBoundary(contentType));
             multiPartStream.PartReady += (sender, e) => {
                 var disposition = e.Part.Headers["Content-Disposition"];
-                var name = namePattern.Match(disposition).Groups["name"].Value;
-                var hasFileName = filenamePattern.Match(disposition);
+                var name = NamePattern.Match(disposition).Groups["name"].Value;
+                var hasFileName = FilenamePattern.Match(disposition);
                 if(hasFileName.Success)
                     files.Add(name, new BasicHttpPostedFile(
                         hasFileName.Groups["filename"].Value, 
@@ -90,7 +88,13 @@ namespace Concoct.Web
                 else
                     fields.Add(name, Encoding.UTF8.GetString(e.Part.Body));
             };
-            multiPartStream.Read(request.InputStream);
+            var data = new MemoryStream(bytes, 0, count, false);
+            multiPartStream.Read(data);
+        }
+
+        void WithBodyBytes(IRequestStream request, Action<byte[], int> action) {
+            var bytes = new byte[request.ContentLength64];
+            action(bytes, request.InputStream.Read(bytes, 0, bytes.Length));
         }
 
         string GetBoundary(string contentType) {

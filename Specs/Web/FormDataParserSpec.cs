@@ -107,7 +107,6 @@ namespace Concoct.Web
             var request = new SimpleRequestStream();
             request.ContentType = null;
             Verify.That(() => formData.ParseFormAndFiles(request) == false);
-
         }
     }
 }
