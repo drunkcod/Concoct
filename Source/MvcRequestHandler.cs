@@ -14,7 +14,10 @@ namespace Concoct
         public MvcRequestHandler(string virtualPath, string physicalPath) {
             this.virtualPath = virtualPath;
             this.physicalPath = physicalPath;
+            ErrorFormatter = new BasicInternalErrorFormatter();
         }
+
+        public IInternalServerErrorFormatter ErrorFormatter { get; set; }
 
         public void Process(HttpListenerContext context) {
             var httpContext = new HttpListenerContextAdapter(context, virtualPath, physicalPath);
@@ -25,7 +28,7 @@ namespace Concoct
                     handler.ProcessRequest(httpContext.AsHttpContext());
             } catch (Exception e) {
                 httpContext.Response.StatusCode = 500;
-                httpContext.Response.Write(e.ToString());
+                httpContext.Response.Write(ErrorFormatter.Format(e));
             }
             httpContext.Response.End();
         }

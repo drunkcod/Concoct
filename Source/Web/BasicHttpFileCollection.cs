@@ -63,7 +63,12 @@ namespace Concoct.Web
         }
 
         public override HttpPostedFileBase this[string name] {
-            get { return files[allKeys.IndexOf(name)]; }
+            get { 
+                var index = allKeys.IndexOf(name);
+                if(index == -1)
+                    throw new KeyNotFoundException(string.Format("Failed to locate:\"{0}\"", name));                        
+                return this[index]; 
+            }
         }
     }
 }

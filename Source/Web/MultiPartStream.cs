@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
 using System.Text;
@@ -72,24 +73,24 @@ namespace Concoct.Web
         const byte LF = 10;
         readonly byte[] LineSeparator = new[]{ CR, LF };
         readonly byte[] HeaderSeparator = new[]{ CR, LF, CR, LF };
-        readonly byte[] BoundryPrefix = new[]{ CR, LF, Dash, Dash };
+        readonly byte[] BoundaryPrefix = new[]{ CR, LF, Dash, Dash };
         
-        readonly byte[] boundryBytes;
+        readonly byte[] boundaryBytes;
 
         public MultiPartStream(string boundry) {
             var boundryLength = Encoding.GetByteCount(boundry);
-            boundryBytes = new byte[BoundryPrefix.Length + boundryLength];
+            boundaryBytes = new byte[BoundaryPrefix.Length + boundryLength];
            
-            BoundryPrefix.CopyTo(boundryBytes, 0);
-            Encoding.GetBytes(boundry, 0, boundry.Length, boundryBytes, BoundryPrefix.Length);
+            BoundaryPrefix.CopyTo(boundaryBytes, 0);
+            Encoding.GetBytes(boundry, 0, boundry.Length, boundaryBytes, BoundaryPrefix.Length);
         }
 
         public event EventHandler<MimeBodyPartDataEventArgs> PartReady;
 
         public void Read(Stream stream) {
-            EnsureStartingBoundry(stream);
+            EnsureStartingBoundary(stream);
             var partData = new MemoryStream();
-            var boundry = new MultiPartBoundryBuffer(boundryBytes.Length, partData.WriteByte);
+            var boundry = new MultiPartBoundryBuffer(boundaryBytes.Length, partData.WriteByte);
             int headerEndPosition = 0;
             for(;;) {
                 var value = ReadByte(stream);
@@ -97,7 +98,7 @@ namespace Concoct.Web
                
                 if(headerEndPosition == 0 && boundry.EndsWith(HeaderSeparator))
                     headerEndPosition = (int)partData.Position + boundry.Size;
-                if(boundry.Matches(boundryBytes)) {
+                if(boundry.Matches(boundaryBytes)) {
                     boundry.Discard();
                     boundry.WriteByte(ReadByte(stream));
                     boundry.WriteByte(ReadByte(stream));
@@ -119,10 +120,15 @@ namespace Concoct.Web
             }
         }
 
-        void EnsureStartingBoundry(Stream stream) {
-            var header = new byte[boundryBytes.Length];
+        public static KeyValuePair<string, string> ParseHeader(string input) {
+            var boundary = input.IndexOf(':');
+            return new KeyValuePair<string,string>(input.Substring(0, boundary), input.Substring(boundary + 1).Trim());
+        }
+
+        void EnsureStartingBoundary(Stream stream) {
+            var header = new byte[boundaryBytes.Length];
             if(stream.Read(header, 0, header.Length) != header.Length
-            || !ElementEquals(header, boundryBytes, 0, 2, header.Length - 2))
+            || !ElementEquals(header, boundaryBytes, 0, 2, header.Length - 2))
                 throw new InvalidOperationException("invalid header");
         }
 
@@ -143,8 +149,8 @@ namespace Concoct.Web
             var headers = new NameValueCollection();
             using(var headerReader = new StreamReader(new MemoryStream(bytes, 0, headerEndPosition), Encoding.ASCII)) {
                 for(string line; (line = headerReader.ReadLine()) != "";) {
-                    var parts = line.Split(':');
-                    headers.Add(parts[0], parts[1].Trim());
+                    var header = ParseHeader(line);
+                    headers.Add(header.Key, header.Value);
                 }
             }
             var body = new byte[bytes.Length - headerEndPosition];

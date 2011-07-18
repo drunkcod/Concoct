@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using Cone;
+using System.Collections.Generic;
 
 namespace Concoct.Web
 {
@@ -49,6 +50,17 @@ namespace Concoct.Web
                 data.PartReady += (s, e) => ++parts;
                 data.Read(MultiPartFormDataSample.CreateSampleStream());
                 Verify.That(() => parts == 2);
+            }
+        }
+        [Context("header parsing")]
+        public class HeaderParsing
+        {
+            [Row("Content-Disposition: form-data; filename=\"R:\\foo.txt\"", "Content-Disposition", "form-data; filename=\"R:\\foo.txt\"")
+            ,DisplayAs("{0} -> {{{1}, {2}}}")]
+            public void parse_header(string input, string name, string value) {
+                var header = MultiPartStream.ParseHeader(input);
+                Verify.That(() => header.Key == name);
+                Verify.That(() => header.Value== value);
             }
         }
     }
