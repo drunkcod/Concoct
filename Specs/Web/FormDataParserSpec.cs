@@ -99,7 +99,6 @@ namespace Concoct.Web
             public void file_content_length_matches_sample() {
                 Verify.That(() => FormData.Files[0].ContentLength == MultiPartFormDataSample.ContentsOfFile1.Length);
             }
-
         }
 
         public void fails_to_parse_if_content_type_is_null() {

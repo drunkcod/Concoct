@@ -5,16 +5,10 @@ using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
+using Concoct.IO;
 
 namespace Concoct.Web
 {
-    public interface IRequestStream 
-    {
-        string ContentType { get; }
-        long ContentLength64 { get; }
-        Stream InputStream { get; }
-    }
-
     public class FormDataParser
     {
         public const string ContentTypeFormUrlEncoded = "application/x-www-form-urlencoded";
@@ -94,15 +88,16 @@ namespace Concoct.Web
 
         void WithBodyBytes(IRequestStream request, Action<byte[], int> action) {
             var bytes = new byte[request.ContentLength64];
-            action(bytes, request.InputStream.Read(bytes, 0, bytes.Length));
+            action(bytes, request.InputStream.ReadBlock(bytes, 0, bytes.Length));
         }
 
         string GetBoundary(string contentType) {
+            const string boundary = "boundary=";
             var parts = contentType.Split(';');
             for(var i = 1; i != parts.Length; ++i) {
                 var x = parts[i].TrimStart();
-                if(x.StartsWith("boundary=")) 
-                    return x.Substring("boundary=".Length);
+                if(x.StartsWith(boundary)) 
+                    return x.Substring(boundary.Length);
             }
             throw new InvalidOperationException(string.Format("no boundary found in [{0}]", contentType));
         }
