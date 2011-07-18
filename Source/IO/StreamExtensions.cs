@@ -15,5 +15,16 @@ namespace Concoct.IO
             for(int bytes; (bytes = self.Read(buffer, 0, bufferSize)) != 0;)
                 target.Write(buffer, 0, bytes);
         }
+
+        public static int ReadBlock(this Stream self, byte[] buffer, int offset, int count) {
+            var bytesRead = 0;
+            while(bytesRead != count) {
+                var block = self.Read(buffer, offset + bytesRead, count - bytesRead);
+                if(block == 0)
+                    break;
+                bytesRead += block;
+            }
+            return bytesRead;
+        }
     }
 }

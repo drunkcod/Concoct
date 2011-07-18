@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Reflection;
 using System.ServiceProcess;
 
 namespace Concoct
@@ -18,13 +17,18 @@ namespace Concoct
         }
 
         static int Main(string[] args) {
-            Environment.CurrentDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-            var config = ConcoctConfiguration.Parse(args);
-            if(Environment.UserInteractive)
-                return new Program(Console.Out, config).RunInteractive();
-            else {
-                var log = new StreamWriter(File.OpenWrite(config.LogFile));
-                return new Program(log, config).RunService();
+            try {
+                var config = ConcoctConfiguration.Parse(args);
+                if(Environment.UserInteractive)
+                    return new Program(Console.Out, config).RunInteractive();
+                else {
+                    var log = new StreamWriter(File.OpenWrite(config.LogFile));
+                    return new Program(log, config).RunService();
+                }
+            } catch(ConfigurationErrorException configurationError) {
+                Console.Error.WriteLine(configurationError);
+                Console.ReadKey();
+                return -1;
             }
         }
 

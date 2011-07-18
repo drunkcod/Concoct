@@ -8,28 +8,25 @@ using Xlnt.Stuff;
 
 namespace Concoct
 {
-    public class ConcoctApplication 
-    {        
-        readonly ConcoctConfiguration config;
+    public class ApplicationHost : MarshalByRefObject 
+    { 
         MvcHost host;
 
-        public ConcoctApplication(ConcoctConfiguration config) {
-            this.config = config;
-        }
-
-        public void OnStart(string[] args) {
+        public void Start(ConcoctConfiguration config)  {
             try {
-                 var site = Assembly.LoadFrom(config.ApplicationAssemblyPath);
+                var site = Assembly.LoadFrom(config.ApplicationAssemblyPath);
                 var types = site.GetTypes();
                 var httpApplicationType = types.Where(x => x.IsTypeOf<HttpApplication>()).First();
                 
-                var applicationRoot = Path.GetDirectoryName(httpApplicationType.Assembly.Location);
-                FileRouteHandler.MapPath = path => path.Replace("~", applicationRoot);
+                FileRouteHandler.MapPath = path => path.Replace("~", config.WorkingDirectory);
 
-                host = MvcHost.Create(config.GetEndPoint(), config.VirtualDirectoryOrPrefix, Environment.CurrentDirectory, httpApplicationType);
+                host = MvcHost.Create(
+                    config.GetEndPoint(), 
+                    config.VirtualDirectoryOrPrefix, 
+                    config.WorkingDirectory, 
+                    httpApplicationType);
 
                 host.Start();
-                Console.WriteLine("Listening for connections.");
 
             } catch(ReflectionTypeLoadException loadError) {
                 Console.Error.WriteLine("Error applications.");
@@ -38,6 +35,31 @@ namespace Concoct
                 }
                 throw new ApplicationException("Failed to load application", loadError);
             }
+        }
+
+        public void Stop() { host.Stop(); }
+    }
+
+    public class ConcoctApplication : MarshalByRefObject
+    {        
+        readonly ConcoctConfiguration config;
+        ApplicationHost host;
+
+        public ConcoctApplication(ConcoctConfiguration config) {
+            this.config = config;
+        }
+
+        public void OnStart(string[] args) {
+            host = CreateHost();
+            host.Start(config);
+        }
+
+        ApplicationHost CreateHost() {
+            var ad = AppDomain.CreateDomain("Host Domain", null, new AppDomainSetup {
+                PrivateBinPath = Path.Combine(config.WorkingDirectory, "bin"),
+                ApplicationBase = config.WorkingDirectory
+            });
+            return (ApplicationHost)ad.CreateInstanceAndUnwrap(typeof(ApplicationHost).Assembly.FullName, typeof(ApplicationHost).FullName);
         }
 
         public void OnStop() {

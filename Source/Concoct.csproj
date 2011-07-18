@@ -85,15 +85,19 @@
     <Compile Include="HttpListenerAcceptor.cs" />
     <Compile Include="Version.cs" />
     <Compile Include="Web\ConcoctHttpServerUtility.cs" />
-    <Compile Include="Web\EmptyFileCollection.cs" />
+    <Compile Include="Web\BasicHttpFileCollection.cs" />
     <Compile Include="Web\FileHttpHandler.cs" />
+    <Compile Include="Web\FormDataParser.cs" />
     <Compile Include="Web\HttpListenerContextAdapter.cs" />
     <Compile Include="Web\HttpListenerRequestAdapter.cs" />
     <Compile Include="Web\HttpListenerResponseAdapter.cs" />
     <Compile Include="Program.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="Web\IInternalServerErrorFormatter.cs" />
+    <Compile Include="Web\IRequestStream.cs" />
     <Compile Include="Web\KnownHttpHeaders.cs" />
+    <Compile Include="Web\MultiPartStream.cs" />
     <Compile Include="Web\Routing\FileRouteHandler.cs" />
   </ItemGroup>
   <ItemGroup>
