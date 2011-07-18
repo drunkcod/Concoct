@@ -11,6 +11,7 @@ namespace Concoct.Web
 {
     public class FormDataParser
     {
+        const int BufferSize = 1 << 10;
         public const string ContentTypeFormUrlEncoded = "application/x-www-form-urlencoded";
         public const string ContentTypeMultipartFormData = "multipart/form-data";
         static readonly Regex FilenamePattern = new Regex("filename=\"(?<filename>.+?)\"", RegexOptions.Compiled);
@@ -71,23 +72,23 @@ namespace Concoct.Web
         void ParseMultiPart(IRequestStream request) {
             var multiPartStream = new MultiPartStream(GetBoundary(request.ContentType));
             multiPartStream.PartReady += (sender, e) => {
-                var disposition = e.Part.Headers["Content-Disposition"];
+                var disposition = e.Part["Content-Disposition"];
                 var name = NamePattern.Match(disposition).Groups["name"].Value;
                 var hasFileName = FilenamePattern.Match(disposition);
                 if(hasFileName.Success)
                     files.Add(name, new BasicHttpPostedFile(
                         hasFileName.Groups["filename"].Value, 
-                        e.Part.Headers["Content-Type"],
+                        e.Part["Content-Type"],
                         e.Part.Body));
                 else
                     fields.Add(name, Encoding.UTF8.GetString(e.Part.Body));
             };
-            var buffer = new byte[1 << 10];
-            for(int bytesRead = 0, wanted = (int)request.ContentLength64, block; 
-                bytesRead < wanted
-                && (block = request.InputStream.Read(buffer, 0, Math.Min(wanted - bytesRead, buffer.Length))) != 0;) 
+            var buffer = new byte[BufferSize];
+            for(int remaining = (int)request.ContentLength64, block; 
+                remaining != 0
+                && (block = request.InputStream.Read(buffer, 0, Math.Min(remaining, buffer.Length))) != 0;) 
             {
-                bytesRead += block;
+                remaining -= block;
                 multiPartStream.Process(buffer, 0, block);
             }
         }

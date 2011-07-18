@@ -61,6 +61,8 @@ namespace Concoct.Web
     {
         public NameValueCollection Headers;
         public byte[] Body;
+
+        public string this[string headerName] { get { return Headers[headerName]; } }
     }
 
     public class MultiPartStream 
@@ -105,7 +107,7 @@ namespace Concoct.Web
                 return next;
             }
 
-            bool ElementEquals(byte[] x, byte[] y, int offsetX, int offsetY, int count) {
+            static bool ElementEquals(byte[] x, byte[] y, int offsetX, int offsetY, int count) {
                 for(var i = 0; i != count; ++i)
                     if(x[offsetX + i] != y[offsetY + i])
                         return false;
