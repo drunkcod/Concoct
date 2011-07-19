@@ -11,7 +11,7 @@ namespace Concoct.Web
 {
     public class FormDataParser
     {
-        const int BufferSize = 1 << 10;
+        const int BufferSize = 1 << 20;
         public const string ContentTypeFormUrlEncoded = "application/x-www-form-urlencoded";
         public const string ContentTypeMultipartFormData = "multipart/form-data";
         static readonly Regex FilenamePattern = new Regex("filename=\"(?<filename>.+?)\"", RegexOptions.Compiled);

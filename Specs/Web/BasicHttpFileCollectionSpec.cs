@@ -1,5 +1,4 @@
 ﻿using Cone;
-using System.Collections.Generic;
 
 namespace Concoct.Web
 {
@@ -16,11 +15,10 @@ namespace Concoct.Web
             Verify.That(() => files["expected"] == expected);
         }
 
-        public void raise_KeyNotFoundException_for_unknown_keys() {
+        public void unknown_file_returns_null() {
             var files  = new BasicHttpFileCollection();
 
-            var e = Verify.Throws<KeyNotFoundException>.When(() => files["not-here"]);
-            Verify.That(() => e.Message.Contains("not-here"));
+            Verify.That(() => files["not-here"] == null);
         }
     }
 }

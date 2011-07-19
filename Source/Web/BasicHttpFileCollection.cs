@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Web;
 
 namespace Concoct.Web
@@ -66,7 +65,7 @@ namespace Concoct.Web
             get { 
                 var index = allKeys.IndexOf(name);
                 if(index == -1)
-                    throw new KeyNotFoundException(string.Format("Failed to locate:\"{0}\"", name));                        
+                    return null;
                 return this[index]; 
             }
         }
