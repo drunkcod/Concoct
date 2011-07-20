@@ -11,7 +11,6 @@ namespace Concoct.Web
 {
     public class FormDataParser
     {
-        const int BufferSize = 1 << 20;
         public const string ContentTypeFormUrlEncoded = "application/x-www-form-urlencoded";
         public const string ContentTypeMultipartFormData = "multipart/form-data";
         static readonly Regex FilenamePattern = new Regex("filename=\"(?<filename>.+?)\"", RegexOptions.Compiled);
@@ -81,16 +80,9 @@ namespace Concoct.Web
                         e.Part["Content-Type"],
                         e.Part.Body));
                 else
-                    fields.Add(name, Encoding.UTF8.GetString(e.Part.Body));
+                    fields.Add(name, e.Part.GetBodyText(Encoding.UTF8));
             };
-            var buffer = new byte[BufferSize];
-            for(int remaining = (int)request.ContentLength64, block; 
-                remaining != 0
-                && (block = request.InputStream.Read(buffer, 0, Math.Min(remaining, buffer.Length))) != 0;) 
-            {
-                remaining -= block;
-                multiPartStream.Process(buffer, 0, block);
-            }
+            multiPartStream.Read(request.InputStream, (int)request.ContentLength64);
         }
 
         void WithBodyBytes(IRequestStream request, Action<byte[], int> action) {

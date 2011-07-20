@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
@@ -57,16 +56,9 @@ namespace Concoct.Web
         public MimePart Part;
     }
 
-    public class MimePart
-    {
-        public NameValueCollection Headers;
-        public byte[] Body;
-
-        public string this[string headerName] { get { return Headers[headerName]; } }
-    }
-
     public class MultiPartStream 
     {
+        const int BufferSize = 1 << 20;
         const byte Dash = (byte)'-';
         const byte CR = 13;
         const byte LF = 10;
@@ -190,9 +182,20 @@ namespace Concoct.Web
                 ProcessByte(ReadByte(stream)); 
         }
 
-        public void Process(byte[] bytes, int offset, int count) {
+        public void Read(Stream stream, int count) {
+            var buffer = new byte[BufferSize];
+            for(int remaining = count, block; 
+                remaining != 0
+                && (block = stream.Read(buffer, 0, Math.Min(remaining, buffer.Length))) != 0;) 
+            {
+                remaining -= block;
+                Process(buffer, block);
+            }
+        }
+
+        void Process(byte[] bytes, int count) {
             for(var i = 0; i != count && !state.IsFinished; ++i)
-                ProcessByte(bytes[offset + i]);
+                ProcessByte(bytes[i]);
         }
 
         void ProcessByte(byte value) {
@@ -211,19 +214,15 @@ namespace Concoct.Web
         }
 
         MimePart ReadPart(byte[] bytes, int headerEndPosition) {
-            var headers = new NameValueCollection();
+            var part = new MimePart(new ArraySegment<byte>(bytes, headerEndPosition, bytes.Length - headerEndPosition));
+            
             using(var headerReader = new StreamReader(new MemoryStream(bytes, 0, headerEndPosition), Encoding.ASCII)) {
                 for(string line; (line = headerReader.ReadLine()) != "";) {
                     var header = ParseHeader(line);
-                    headers.Add(header.Key, header.Value);
+                    part.Add(header.Key, header.Value);
                 }
             }
-            var body = new byte[bytes.Length - headerEndPosition];
-            Array.Copy(bytes, headerEndPosition, body, 0, body.Length);
-            return new MimePart {
-                Headers = headers,
-                Body = body
-            };
+            return part;
         }
 
         void OnPartReady(MimePart part) {

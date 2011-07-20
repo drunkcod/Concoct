@@ -68,6 +68,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ApplicationBuilder.cs" />
+    <Compile Include="Web\BasicHttpPostedFile.cs" />
     <Compile Include="Web\BasicRequestHandler.cs" />
     <Compile Include="ConcoctApplication.cs" />
     <Compile Include="ConcoctConfiguration.cs" />
@@ -97,6 +98,7 @@
     <Compile Include="Web\IInternalServerErrorFormatter.cs" />
     <Compile Include="Web\IRequestStream.cs" />
     <Compile Include="Web\KnownHttpHeaders.cs" />
+    <Compile Include="Web\MimePart.cs" />
     <Compile Include="Web\MultiPartStream.cs" />
     <Compile Include="Web\Routing\FileRouteHandler.cs" />
   </ItemGroup>

@@ -96,6 +96,7 @@
   <ItemGroup>
     <Compile Include="HttpListenerAcceptorSpec.cs" />
     <Compile Include="Web\BasicHttpFileCollectionSpec.cs" />
+    <Compile Include="Web\MimePartSpec.cs" />
     <Compile Include="Web\MultiPartStreamSpec.cs" />
     <Compile Include="ProgramSpec.cs" />
     <Compile Include="TypeMixerSpec.cs" />

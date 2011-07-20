@@ -1,6 +1,5 @@
 ﻿using System.IO;
 using Cone;
-using System.Collections.Generic;
 
 namespace Concoct.Web
 {
@@ -52,6 +51,7 @@ namespace Concoct.Web
                 Verify.That(() => parts == 2);
             }
         }
+
         [Context("header parsing")]
         public class HeaderParsing
         {
