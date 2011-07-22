@@ -237,8 +237,8 @@ namespace Concoct.Web
             return (byte)b;                  
         }
 
-        MimePart ReadPart(byte[] bytes, List<BodyReader.LineSegment> lines, int headerEndPosition) {
-            var part = new MimePart(new ArraySegment<byte>(bytes, headerEndPosition, bytes.Length - headerEndPosition));
+        MimePart ReadPart(byte[] bytes, List<BodyReader.LineSegment> lines, int bodyStartPosition) {
+            var part = new MimePart(new ArraySegment<byte>(bytes, bodyStartPosition, bytes.Length - bodyStartPosition));
             
             for(var i = 0; i != lines.Count; ++i) {
                 var segment = lines[i];
