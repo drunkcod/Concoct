@@ -10,6 +10,14 @@ namespace Concoct.Web
 
         public SimpleRequestStream() : this(new MemoryStream()) { }
 
+        public SimpleRequestStream(string body) {
+            data = new MemoryStream();
+            var writer = new StreamWriter(data);
+            writer.Write(body);
+            writer.Flush();
+            data.Position = 0;
+        }
+
         public SimpleRequestStream(MemoryStream data) {
             this.data = data;
         }
@@ -99,6 +107,25 @@ namespace Concoct.Web
             public void file_content_length_matches_sample() {
                 Verify.That(() => FormData.Files[0].ContentLength == MultiPartFormDataSample.ContentsOfFile1.Length);
             }
+        }
+        
+        public void whats_going_on() {
+var body =
+@"-----------------------------7db18c1726147c
+Content-Disposition: form-data; name=""product""
+
+RawFeasibility
+-----------------------------7db18c1726147c
+Content-Disposition: form-data; name=""environment""
+
+beta
+-----------------------------7db18c1726147c--";
+                var formData = new FormDataParser();
+                var request = new SimpleRequestStream(body);
+                request.ContentType = "multipart/form-data; boundary=---------------------------7db18c1726147c";
+                Verify.That(() => formData.ParseFormAndFiles(request));
+                Verify.That(() => formData.Fields["environment"] == "beta");
+                Verify.That(() => formData.Fields["product"] == "RawFeasibility");
         }
 
         public void fails_to_parse_if_content_type_is_null() {

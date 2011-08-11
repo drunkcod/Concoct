@@ -119,7 +119,7 @@ namespace Concoct.Web
                 public int Start, Count;
             }
 
-            public delegate void PartReadyHandler(byte[] data, List<LineSegment> lines, int headerEndPosition);
+            public delegate void PartReadyHandler(byte[] data, List<LineSegment> lines, int bodyStartPosition, int bodyLength);
 
             readonly MemoryStream partData = new MemoryStream();
             readonly MultiPartBoundaryBuffer boundary;
@@ -180,7 +180,10 @@ namespace Concoct.Web
             bool HasPartData { get { return partData.Position != 0; } }
 
             void PartReady() {
-                partReady(partData.ToArray(), lines, bodyStartPosition);
+                var bodyLength = partData.Position - bodyStartPosition;
+                if(bodyLength > int.MaxValue)
+                    throw new InvalidDataException("body to large");
+                partReady(partData.GetBuffer(), lines, bodyStartPosition, (int)bodyLength);
                 partData.Position = 0;
                 bodyStartPosition = 0;
                 lineStart = 0;
@@ -195,7 +198,7 @@ namespace Concoct.Web
             BoundaryPrefix.CopyTo(boundaryBytes, 0);
             Encoding.GetBytes(boundary, 0, boundary.Length, boundaryBytes, BoundaryPrefix.Length);
 
-            var body = new BodyReader(boundaryBytes, (bytes, lines, headerEndPosition) => OnPartReady(ReadPart(bytes, lines, headerEndPosition)));
+            var body = new BodyReader(boundaryBytes, (bytes, lines, bodyStartPosition, bodyLength) => OnPartReady(ReadPart(bytes, lines, bodyStartPosition, bodyLength)));
             state = new HeaderReader(boundaryBytes, body);
         }
 
@@ -237,8 +240,8 @@ namespace Concoct.Web
             return (byte)b;                  
         }
 
-        MimePart ReadPart(byte[] bytes, List<BodyReader.LineSegment> lines, int bodyStartPosition) {
-            var part = new MimePart(new ArraySegment<byte>(bytes, bodyStartPosition, bytes.Length - bodyStartPosition));
+        MimePart ReadPart(byte[] bytes, List<BodyReader.LineSegment> lines, int bodyStartPosition, int bodyLength) {
+            var part = new MimePart(new ArraySegment<byte>(bytes, bodyStartPosition, bodyLength));
             
             for(var i = 0; i != lines.Count; ++i) {
                 var segment = lines[i];
