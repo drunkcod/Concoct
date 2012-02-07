@@ -37,7 +37,7 @@ namespace Concoct
 
         protected void Application_Start() {           
             var controllerFactory = new BasicControllerFactory();
-            controllerFactory.Register(typeof(TestController).Assembly.GetTypes());
+            controllerFactory.Register(new[]{ typeof(TestController) });
             ControllerBuilder.Current.SetControllerFactory(controllerFactory);
             ViewEngines.Engines.Clear();
 
@@ -56,10 +56,10 @@ namespace Concoct
 		}
 
 		void WithResponseFrom(string url, Action<WebResponse> withResponse) {
-			var host = MvcHost.Create(new IPEndPoint(IPAddress.Any, 8080), "/Test", @"R:\Concoct\Build", typeof(TestApplication));
+			var host = MvcHost.Create(new IPEndPoint(IPAddress.Any, 8080), "/", Environment.CurrentDirectory, typeof(TestApplication));
             try {
                 host.Start();
-                var request = WebRequest.Create("http://localhost:8080/Test" + url);
+                var request = WebRequest.Create("http://localhost:8080" + url);
                 using(var response = request.GetResponse())
                     withResponse(response);
             } finally {
