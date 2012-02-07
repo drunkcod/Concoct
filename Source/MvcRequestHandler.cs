@@ -25,7 +25,7 @@ namespace Concoct
                 var data = GetRouteData(httpContext);
                 var request = new RequestContext(httpContext, data);
                 var handler = data.RouteHandler.GetHttpHandler(request);
-                httpContext.AsHttpContext(handler.ProcessRequest);
+                httpContext.AsHttpContext(handler.ProcessRequest, true);
             } catch (Exception e) {
                 httpContext.Response.StatusCode = 500;
                 httpContext.Response.Write(ErrorFormatter.Format(e));

@@ -64,7 +64,7 @@ namespace Concoct
             var proxies = AppDomain.CurrentDomain.DefineDynamicAssembly(new AssemblyName(ProxiesAssemblyName), AssemblyBuilderAccess.Run);
             var module = proxies.DefineDynamicModule("Main");
             var proxy = ApplicationBuilder.CreateIn(module, httpApplicationType);
-            proxy.DynamicEventWireUp(x => x.Start(), "Application_Start");
+            proxy.DynamicEventWireUp("Application_Start", x => x.Start());
             return proxy.CreateType();
         }
     }

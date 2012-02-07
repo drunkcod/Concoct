@@ -14,6 +14,12 @@ namespace Concoct.Demo.Controllers
             });
         }
 
+		public string Xml() 
+		{
+			Response.ContentType = "text/xml";
+			return "<message>Hello Xml World</message>";
+		}
+
         IEnumerable<HttpPostedFileBase> PostedFiles {
             get {
                 foreach(string name in Request.Files)

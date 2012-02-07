@@ -67,10 +67,10 @@ namespace Concoct.Web
             public override string GetUriPath() { return Request.RawUrl; }
 
             public override void SendKnownResponseHeader(int index, string value) {
-                if(index == HttpWorkerRequest.HeaderContentType)
-                    Response.ContentType = value;
-                else
-                    SendUnknownResponseHeader(GetKnownRequestHeader(index), value);
+				switch(index) {
+					case HttpWorkerRequest.HeaderContentType: Response.ContentType = value; break;
+					default: SendUnknownResponseHeader(GetKnownRequestHeader(index), value); break;
+				}
             }
 
             public override void SendResponseFromFile(IntPtr handle, long offset, long length)
@@ -119,16 +119,22 @@ namespace Concoct.Web
         public override HttpServerUtilityBase Server { get { return server; } }
         public override Cache Cache { get { return cache; } }
 
-        public void AsHttpContext(Action<HttpContext> action)
+        public void AsHttpContext(Action<HttpContext> action, bool alignResponses)
         {
             var worker = new HttpListenerWorkerRequest(this);
             var context = new HttpContext(worker);
             try {
                 action(context);
             } finally {
+				if(alignResponses)
+					AlignResponses(context);
                 context.Response.Flush();
             }
         }
+
+		private void AlignResponses(HttpContext context) {
+			context.Response.ContentType = response.ContentType ;
+		}
 
         public static Func<Uri,string> MakeRelativeUriFunc(Uri request, string virtualPath){
             var baseUri = new Uri(string.Format("{0}://{1}:{2}{3}{4}/", 

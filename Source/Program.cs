@@ -25,9 +25,8 @@ namespace Concoct
                     var log = new StreamWriter(File.OpenWrite(config.LogFile));
                     return new Program(log, config).RunService();
                 }
-            } catch(ConfigurationErrorException configurationError) {
-                Console.Error.WriteLine(configurationError);
-                Console.ReadKey();
+            } catch(ConfigurationErrorException) {
+                Console.Error.WriteLine("Usage is {0} <assembly> <virtual-directory>", Path.GetFileName(typeof(Program).Assembly.Location));
                 return -1;
             }
         }
@@ -42,9 +41,6 @@ namespace Concoct
             }
             catch(ApplicationException) {
                 return -1;
-            }
-            catch(ConfigurationErrorException) {
-                Console.Error.WriteLine("Usage is {0} <assembly> <virtual-directory>", Path.GetFileName(typeof(Program).Assembly.Location));
             }
             return 0;
         }

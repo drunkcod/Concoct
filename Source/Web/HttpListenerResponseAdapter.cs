@@ -7,14 +7,15 @@ namespace Concoct.Web
 {
     class HttpListenerResponseAdapter : HttpResponseBase
     {
+		static Encoding DefaultEncoding = new UTF8Encoding(false);
         readonly HttpListenerResponse response;
         readonly MemoryStream outputStream;
         TextWriter output;
 
         public HttpListenerResponseAdapter(HttpListenerResponse response) {
             this.response = response;
-            this.response.ContentType = "text/html";
-            this.response.ContentEncoding = new UTF8Encoding(false);
+            //this.response.ContentType = "text/html";
+            //this.response.ContentEncoding = DefaultEncoding;
             this.outputStream = new MemoryStream();
         }
 
@@ -33,7 +34,7 @@ namespace Concoct.Web
         }
 
         public override Encoding ContentEncoding {
-            get { return response.ContentEncoding; }
+            get { return response.ContentEncoding ?? DefaultEncoding; }
             set {
                 ResetOutput();
                 response.ContentEncoding = value;
@@ -42,7 +43,9 @@ namespace Concoct.Web
 
         public override string ContentType {
             get { return response.ContentType; }
-            set { response.ContentType = value; }
+            set { 
+				response.ContentType = value;
+			}
         }
 
         public override string RedirectLocation {

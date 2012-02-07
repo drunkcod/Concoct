@@ -23,7 +23,7 @@ namespace Concoct
             this.typeBuilder = typeBuilder;
         }
 
-        public void DynamicEventWireUp(Expression<Action<IConcoctApplication>> expression, string eventName) {
+        public void DynamicEventWireUp(string eventName, Expression<Action<IConcoctApplication>> expression) {
             var method = Method(expression);
             var start = typeBuilder.DefineMethod(method.Name, MethodAttributes.Private | MethodAttributes.Virtual | MethodAttributes.Final);
             var il = start.GetILGenerator();
