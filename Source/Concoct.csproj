@@ -68,6 +68,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ApplicationBuilder.cs" />
+    <Compile Include="IServiceController.cs" />
     <Compile Include="Web\BasicHttpPostedFile.cs" />
     <Compile Include="Web\BasicRequestHandler.cs" />
     <Compile Include="ConcoctApplication.cs" />

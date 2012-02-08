@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Net;
-using Cone;
-using Concoct.Web;
-using Xlnt.Web.Mvc;
 using System.Web.Mvc;
 using System.Web.Routing;
 using Concoct.Controllers;
+using Cone;
+using Xlnt.Web.Mvc;
 
 namespace Concoct.Controllers 
 {
@@ -45,26 +44,17 @@ namespace Concoct
             RegisterRoutes(RouteTable.Routes);
         }
     }
-
 	[Describe(typeof(MvcRequestHandler))]
-	public class MvcRequestHandlerSpec
+	public class MvcRequestHandlerSpec : HttpServiceFixture
 	{
 		public void handles_changed_ContentType() {
-			WithResponseFrom("/Test/Xml", response => 
+			WithResponseFrom("http://localhost:8080/Test/Xml", response => 
 				Verify.That(() => response.ContentType == "text/xml")
 			);
 		}
 
-		void WithResponseFrom(string url, Action<WebResponse> withResponse) {
-			var host = MvcHost.Create(new IPEndPoint(IPAddress.Any, 8080), "/", Environment.CurrentDirectory, typeof(TestApplication));
-            try {
-                host.Start();
-                var request = WebRequest.Create("http://localhost:8080" + url);
-                using(var response = request.GetResponse())
-                    withResponse(response);
-            } finally {
-                host.Stop();
-            }
+		protected override IServiceController CreateService() {
+			return MvcHost.Create(new IPEndPoint(IPAddress.Any, 8080), "/", Environment.CurrentDirectory, typeof(TestApplication));
 		}
 	}
 }

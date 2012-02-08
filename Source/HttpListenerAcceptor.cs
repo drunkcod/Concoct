@@ -5,7 +5,7 @@ using System.Threading;
 
 namespace Concoct
 {
-    public class HttpListenerAcceptor
+    public class HttpListenerAcceptor : IServiceController
     {
         class HttpListenerAcceptorContext
         {

@@ -97,7 +97,7 @@ namespace Concoct.Web
             }
 
             public override string GetKnownRequestHeader(int index) {
-                return KnownHttpHeaders.FxHeaders[index].ToUpperInvariant();
+                return KnownHttpHeaders.FxHeaders[index];
             }
         }
 
@@ -143,10 +143,7 @@ namespace Concoct.Web
                 request.Port,
                 virtualPath.StartsWith("/") ? string.Empty : "/",
                 virtualPath));
-            return uri => {
-                var relative = "~/" + baseUri.MakeRelativeUri(uri);
-				return relative;
-            };
+            return uri => "~/" + baseUri.MakeRelativeUri(uri);
         }
     }
 }

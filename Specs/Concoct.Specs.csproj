@@ -98,6 +98,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="HttpListenerAcceptorSpec.cs" />
+    <Compile Include="HttpServiceFixture.cs" />
     <Compile Include="MvcRequestHandlerSpec.cs" />
     <Compile Include="Web\BasicHttpFileCollectionSpec.cs" />
     <Compile Include="Web\MimePartSpec.cs" />

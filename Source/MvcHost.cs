@@ -5,7 +5,7 @@ using System.Reflection.Emit;
 
 namespace Concoct
 {
-    public class MvcHost : IDisposable
+    public class MvcHost : IDisposable, IServiceController
     {
         const string ProxiesAssemblyName = "Concoct.Proxies";
 
