@@ -12,7 +12,7 @@ namespace Concoct
     { 
         MvcHost host;
 
-        public void Start(ConcoctConfiguration config)  {
+        public void Start(ConcoctConfiguration config, ILog log)  {
             try {
                 var site = Assembly.LoadFrom(config.ApplicationAssemblyPath);
                 var types = site.GetTypes();
@@ -27,9 +27,11 @@ namespace Concoct
                     httpApplicationType);
 
                 host.Start();
-
+			} catch(FileNotFoundException appNotFound) {
+				log.Error("Failed to locate {0}", appNotFound.FileName);
+				throw new ApplicationException("Failed to load application");
             } catch(ReflectionTypeLoadException loadError) {
-                Console.Error.WriteLine("Error applications.");
+                log.Error("Error applications.");
                 foreach(var item in loadError.LoaderExceptions) {
                     Console.Error.WriteLine(item);
                 }
@@ -43,15 +45,17 @@ namespace Concoct
     public class ConcoctApplication : MarshalByRefObject
     {        
         readonly ConcoctConfiguration config;
+		readonly ILog log;
         ApplicationHost host;
 
-        public ConcoctApplication(ConcoctConfiguration config) {
+        public ConcoctApplication(ConcoctConfiguration config, ILog log) {
             this.config = config;
+			this.log = log;
         }
 
         public void OnStart(string[] args) {
             host = CreateHost();
-            host.Start(config);
+            host.Start(config, log);
         }
 
         ApplicationHost CreateHost() {

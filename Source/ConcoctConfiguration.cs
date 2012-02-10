@@ -1,8 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Net;
 using System.Text.RegularExpressions;
-using System.IO;
-using System;
 
 namespace Concoct
 {
@@ -16,6 +16,7 @@ namespace Concoct
         public ConcoctConfiguration() {
             Port = 80;
             Host = IPAddress.Any;
+			LogFile = "Concoct.log";
         }
 
         public static ConcoctConfiguration Parse(string[] args) {
@@ -25,14 +26,13 @@ namespace Concoct
 
             for(int i = 0; i != args.Length; ++i) {
                 var item = args[i];
-                if(item.StartsWith(OptionPrefix)) {
-                    var m = r.Match(item);
-                    if(m.Success) {
-                        var value = m.Groups["value"].Value;
-                        switch(m.Groups["name"].Value) {
-                            case "port": configuration.Port = int.Parse(value); break;
-                            case "path": configuration.WorkingDirectory = value; break;
-                        }
+                var m = r.Match(item);
+                if(m.Success) {
+                    var value = m.Groups["value"].Value;
+                    switch(m.Groups["name"].Value) {
+                        case "port": configuration.Port = int.Parse(value); break;
+                        case "path": configuration.WorkingDirectory = value; break;
+						case "log" : configuration.LogFile = value; break;
                     }
                 }
                 else
@@ -55,7 +55,7 @@ namespace Concoct
             get { return string.IsNullOrEmpty(workingDirectory) ? Path.GetDirectoryName(Path.GetFullPath(ApplicationAssemblyPath)) : workingDirectory; }
             set { workingDirectory = value; }
         }
-        public string LogFile = "Concoct.log";
+        public string LogFile;
 
         public IPEndPoint GetEndPoint() { return new IPEndPoint(Host, Port); }
     }
