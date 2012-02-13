@@ -12,6 +12,7 @@ namespace Concoct
         const string OptionPrefix = "--";
 
         string workingDirectory;
+		string configurationFile;
 
         public ConcoctConfiguration() {
             Port = 80;
@@ -33,6 +34,8 @@ namespace Concoct
                         case "port": configuration.Port = int.Parse(value); break;
                         case "path": configuration.WorkingDirectory = value; break;
 						case "log" : configuration.LogFile = value; break;
+						case "config" : configuration.configurationFile = value; break;
+
                     }
                 }
                 else
@@ -55,6 +58,14 @@ namespace Concoct
             get { return string.IsNullOrEmpty(workingDirectory) ? Path.GetDirectoryName(Path.GetFullPath(ApplicationAssemblyPath)) : workingDirectory; }
             set { workingDirectory = value; }
         }
+		public string PrivateBinPath { get { return Path.Combine(WorkingDirectory, "Bin"); } }
+		public string ConfigurationFile { 
+			get { 
+				if(string.IsNullOrEmpty(configurationFile))
+					return AppDomain.CurrentDomain.SetupInformation.ConfigurationFile;
+				return configurationFile;
+			} 
+		}
         public string LogFile;
 
         public IPEndPoint GetEndPoint() { return new IPEndPoint(Host, Port); }

@@ -60,8 +60,9 @@ namespace Concoct
 
         ApplicationHost CreateHost() {
             var ad = AppDomain.CreateDomain("Host Domain", null, new AppDomainSetup {
-                PrivateBinPath = Path.Combine(config.WorkingDirectory, "bin"),
-                ApplicationBase = config.WorkingDirectory
+                ApplicationBase = config.WorkingDirectory,
+                PrivateBinPath = config.PrivateBinPath,
+				ConfigurationFile = config.ConfigurationFile
             });
             return (ApplicationHost)ad.CreateInstanceAndUnwrap(typeof(ApplicationHost).Assembly.FullName, typeof(ApplicationHost).FullName);
         }

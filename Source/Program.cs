@@ -26,6 +26,7 @@ namespace Concoct
             try {
                 var config = ConcoctConfiguration.Parse(args);
                 if(Environment.UserInteractive) {
+					Console.WriteLine(config.ConfigurationFile);
 					return new Program(Console.Out, config).RunInteractive();
                 } else {
                     var log = new StreamWriter(File.Open(config.LogFile, FileMode.OpenOrCreate, FileAccess.Read, FileShare.Write));

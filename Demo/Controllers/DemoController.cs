@@ -2,6 +2,7 @@
 using System.Web;
 using System.Web.Mvc;
 using Concoct.Demo.Models;
+using System.Configuration;
 
 namespace Concoct.Demo.Controllers
 {
@@ -13,6 +14,10 @@ namespace Concoct.Demo.Controllers
                 Files = PostedFiles
             });
         }
+
+		public string Message() {
+			return ConfigurationManager.AppSettings["message"];
+		}
 
 		public string Xml() 
 		{
