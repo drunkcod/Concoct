@@ -29,7 +29,7 @@ namespace Concoct
 					Console.WriteLine(config.ConfigurationFile);
 					return new Program(Console.Out, config).RunInteractive();
                 } else {
-                    var log = new StreamWriter(File.Open(config.LogFile, FileMode.OpenOrCreate, FileAccess.Read, FileShare.Write));
+                    var log = new StreamWriter(File.Open(config.LogFile, FileMode.OpenOrCreate, FileAccess.Write, FileShare.Write));
                     return new Program(log, config).RunService();
                 }
             } catch(ConfigurationErrorException) {
