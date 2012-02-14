@@ -35,7 +35,6 @@ namespace Concoct
                         case "path": configuration.WorkingDirectory = value; break;
 						case "log" : configuration.LogFile = value; break;
 						case "config" : configuration.configurationFile = value; break;
-
                     }
                 }
                 else
