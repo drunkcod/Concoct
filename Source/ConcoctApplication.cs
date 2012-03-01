@@ -26,6 +26,9 @@ namespace Concoct
                     config.WorkingDirectory, 
                     httpApplicationType);
 
+                if(config.LogRequests)
+                    host.RequestHandler.BeginRequest += (_, e) => log.Info("{0} {1}", e.Request.HttpMethod, e.Request.Url);
+
                 host.Start();
 			} catch(FileNotFoundException appNotFound) {
 				log.Error("Failed to locate {0}", appNotFound.FileName);
@@ -53,7 +56,7 @@ namespace Concoct
 			this.log = log;
         }
 
-        public void OnStart(string[] args) {
+        public void Start() {
             host = CreateHost();
             host.Start(config, log);
         }
@@ -67,7 +70,7 @@ namespace Concoct
             return (ApplicationHost)ad.CreateInstanceAndUnwrap(typeof(ApplicationHost).Assembly.FullName, typeof(ApplicationHost).FullName);
         }
 
-        public void OnStop() {
+        public void Stop() {
             host.Stop();
         }
     }

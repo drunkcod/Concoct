@@ -26,7 +26,6 @@ namespace Concoct
             try {
                 var config = ConcoctConfiguration.Parse(args);
                 if(Environment.UserInteractive) {
-					Console.WriteLine(config.ConfigurationFile);
 					return new Program(Console.Out, config).RunInteractive();
                 } else {
                     var log = new StreamWriter(File.Open(config.LogFile, FileMode.OpenOrCreate, FileAccess.Write, FileShare.Write));
@@ -62,12 +61,12 @@ namespace Concoct
 
         protected override void OnStart(string[] args) {
 			Info("Started");
-            application.OnStart(args);
+            application.Start();
         }
 
         protected override void OnStop() {
 			Info("Stopped");
-            application.OnStop();
+            application.Stop();
         }
 
 		public void Info(string format, params object[] args) {

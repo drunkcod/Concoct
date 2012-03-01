@@ -3,3 +3,4 @@
 --path <working-directory>     (default is Concoct.exe location)
 --log <path-to-logfile>        (default is Concoct.log)
 --config <path-to-config>      (default is Concoct.config)
+--logRequests <true/false>     (default is false)

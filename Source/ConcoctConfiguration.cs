@@ -35,6 +35,7 @@ namespace Concoct
                         case "path": configuration.WorkingDirectory = value; break;
 						case "log" : configuration.LogFile = value; break;
 						case "config" : configuration.configurationFile = value; break;
+                        case "logRequests" : configuration.LogRequests = bool.Parse(value); break;
                     }
                 }
                 else
@@ -66,6 +67,7 @@ namespace Concoct
 			} 
 		}
         public string LogFile;
+        public bool LogRequests;
 
         public IPEndPoint GetEndPoint() { return new IPEndPoint(Host, Port); }
     }
