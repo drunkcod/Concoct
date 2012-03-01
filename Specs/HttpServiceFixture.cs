@@ -4,8 +4,7 @@ using System.Net;
 namespace Concoct
 {
 	public abstract class HttpServiceFixture 
-	{
-		
+	{		
 		public void WithResponseFrom(string url, Action<WebResponse> withResponse) {
 			var host = CreateService();
 			try {
@@ -17,6 +16,7 @@ namespace Concoct
                 host.Stop();
             }
 		}
+
 		protected abstract IServiceController CreateService();
 	}
 }

@@ -43,6 +43,8 @@ namespace Concoct
 
         public string Prefix { get { return listener.Prefixes.First(); } }
 
+        public IHttpListenerRequestHandler RequestHandler { get { return handler; } }
+
         public void Start() {
             listener.Start();
             backlog = new WaitHandle[contexts.Length];

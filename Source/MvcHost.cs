@@ -40,6 +40,9 @@ namespace Concoct
         }
 
         public object Application { get { return application; } }
+        
+        public MvcRequestHandler RequestHandler { get { return (MvcRequestHandler)acceptor.RequestHandler; } }
+
         public event EventHandler<EventArgs> Starting;
 
         public void Start() {

@@ -5,6 +5,8 @@ using System.Web.Routing;
 using Concoct.Controllers;
 using Cone;
 using Xlnt.Web.Mvc;
+using Cone.Helpers;
+using System.Reflection;
 
 namespace Concoct.Controllers 
 {
@@ -44,17 +46,41 @@ namespace Concoct
             RegisterRoutes(RouteTable.Routes);
         }
     }
+
 	[Describe(typeof(MvcRequestHandler))]
 	public class MvcRequestHandlerSpec : HttpServiceFixture
 	{
+        Action<MvcHost> ConfigureHost;
+
+        [BeforeEach]
+        public void EstablishWorld() {
+            ConfigureHost = _ => { };
+        }
+
 		public void handles_changed_ContentType() {
 			WithResponseFrom("http://localhost:8080/Test/Xml", response => 
 				Verify.That(() => response.ContentType == "text/xml")
 			);
 		}
 
+        public void raises_BeginRequest() {
+            var beginRequest = new EventSpy<MvcRequestHandlerEventArgs>();
+            ConfigureHost = host => {
+                host.RequestHandler.BeginRequest += beginRequest;
+            };
+
+            WithResponseFrom("http://localhost:8080", response => { });
+
+            Verify.That(() => beginRequest.HasBeenCalled);
+            Verify.Guard(() =>
+                beginRequest.Then((s, e) => Verify.That(() => e.Request.Url.ToString() == "http://localhost:8080/"))
+            );
+        }
+
 		protected override IServiceController CreateService() {
-			return MvcHost.Create(new IPEndPoint(IPAddress.Any, 8080), "/", Environment.CurrentDirectory, typeof(TestApplication));
+            var host = MvcHost.Create(new IPEndPoint(IPAddress.Any, 8080), "/", Environment.CurrentDirectory, typeof(TestApplication));
+            ConfigureHost(host);
+            return host;
 		}
 	}
 }
