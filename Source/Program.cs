@@ -33,7 +33,10 @@ namespace Concoct
                     return new Program(log, config).RunService();
                 }
             } catch(ConfigurationErrorException) {
-                Console.Error.WriteLine("Usage is {0} <assembly> <virtual-directory>", Path.GetFileName(typeof(Program).Assembly.Location));
+                using(var usage = typeof(Program).Assembly.GetManifestResourceStream("Concoct.Usage.txt")) {
+                    var reader = new StreamReader(usage);;
+                    Console.Error.WriteLine(reader.ReadToEnd());
+                }
                 return -1;
             }
         }

@@ -1,0 +1,5 @@
+﻿Usage is {0} <assembly> <virtual-directory> [options]
+--port <port-to-listen-on>     (default is 80)
+--path <working-directory>     (default is Concoct.exe location)
+--log <path-to-logfile>        (default is Concoct.log)
+--config <path-to-config>      (default is Concoct.config)
