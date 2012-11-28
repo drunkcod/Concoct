@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Specialized;
+using System.IO;
 using System.Net;
 using System.Text;
 using System.Web;
@@ -11,9 +12,9 @@ namespace Concoct.Web
         readonly HttpListenerRequest request;
         readonly string applicationPath;
         readonly Func<Uri,string> makeAppRelativePath;
-        readonly NameValueCollection serverVariables = new NameValueCollection();
         readonly FormDataParser formParser = new FormDataParser();
-
+		readonly NameValueCollection serverVariables = new NameValueCollection();
+		Stream inputStream;
 
         public HttpListenerRequestAdapter(HttpListenerRequest request, string applicationPath, Func<Uri, string> makeAppRelativePath) {
             this.request = request;
@@ -31,15 +32,28 @@ namespace Concoct.Web
             get { return request.ContentEncoding; }
             set { throw new NotSupportedException(); }
         }
-        public override string PathInfo { get { return string.Empty; } }
+		
+		public override int ContentLength { get { return (int)request.ContentLength64; } }
+
+		public override string ContentType {
+            get { return request.ContentType ?? string.Empty; }
+            set { throw new NotSupportedException(); }
+        }
+
+		public override string PathInfo { get { return string.Empty; } }
         public override string RawUrl { get { return request.Url.AbsolutePath; } }
         public string HttpVersion { get { return request.ProtocolVersion.ToString(); } }
         public override string HttpMethod { get { return request.HttpMethod; } }
-        public override string ContentType {
-            get { return request.ContentType; }
-            set { throw new NotSupportedException(); }
-        }
-        public override System.IO.Stream InputStream { get { return request.InputStream; } }
+
+        public override System.IO.Stream InputStream { 
+			get { 
+				if(inputStream == null) {
+					inputStream = new MemoryStream();
+					request.InputStream.CopyTo(inputStream);
+				}
+				return inputStream; 
+			} 
+		}
 
         public override NameValueCollection Form {
             get {
@@ -60,9 +74,16 @@ namespace Concoct.Web
         public override NameValueCollection ServerVariables { get { return serverVariables; } }
         public override void ValidateInput() { }
 
+		public override string this[string key]
+		{
+			get { throw new NotSupportedException(); }
+		}
+
         public void ParseFormAndFiles() {
             if(formParser.HasResult) return;
-            formParser.ParseFormAndFiles(request);
+            formParser.ParseFormAndFiles(new RequestStream(ContentType, ContentLength, InputStream));
+			InputStream.Seek(0, SeekOrigin.Begin);
         }
+
     }
 }

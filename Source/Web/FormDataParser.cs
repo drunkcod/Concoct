@@ -9,27 +9,29 @@ using Concoct.IO;
 
 namespace Concoct.Web
 {
-    public class FormDataParser
+    class RequestStream : IRequestStream
+    {
+        readonly HttpListenerRequest request;
+
+        public RequestStream(string contentType, long length, Stream inputStream) {
+			ContentType = contentType;
+			ContentLength64 = length;
+			InputStream = inputStream;
+        }
+
+        public string ContentType { get; private set; }
+
+        public long ContentLength64 { get; private set; }
+
+        public Stream InputStream { get; private set; }
+    }
+
+	public class FormDataParser
     {
         public const string ContentTypeFormUrlEncoded = "application/x-www-form-urlencoded";
         public const string ContentTypeMultipartFormData = "multipart/form-data";
         static readonly Regex FilenamePattern = new Regex("filename=\"(?<filename>.+?)\"", RegexOptions.Compiled);
         static readonly Regex NamePattern = new Regex("name=\"(?<name>.+?)\"", RegexOptions.Compiled);
-
-        class HttpListenerRequestStreamAdapter : IRequestStream
-        {
-            readonly HttpListenerRequest request;
-
-            public HttpListenerRequestStreamAdapter(HttpListenerRequest request) {
-                this.request = request;
-            }
-
-            public string ContentType { get { return request.ContentType; } }
-
-            public long ContentLength64 { get { return request.ContentLength64; } }
-
-            public Stream InputStream { get { return request.InputStream; } }
-        }
 
         NameValueCollection fields;
         BasicHttpFileCollection files;
@@ -37,10 +39,6 @@ namespace Concoct.Web
         public bool HasResult { get { return fields != null; } }
         public NameValueCollection Fields { get { return fields; } }
         public HttpFileCollectionBase Files { get { return files; } }
-
-        public void ParseFormAndFiles(HttpListenerRequest request) {
-            ParseFormAndFiles(new HttpListenerRequestStreamAdapter(request));
-        }
 
         public bool ParseFormAndFiles(IRequestStream request) {
             if(HasResult) return false;

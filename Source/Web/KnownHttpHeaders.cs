@@ -4,7 +4,7 @@ using System.Web;
 
 namespace Concoct.Web
 {
-    struct KnownHttpHeader
+    public struct KnownHttpHeader
     {
         public readonly int Index;
         public readonly string Header;
@@ -15,7 +15,7 @@ namespace Concoct.Web
         }
     }
 
-    class KnownHttpHeaders : IEnumerable<KnownHttpHeader>
+    public class KnownHttpHeaders : IEnumerable<KnownHttpHeader>
     {
         struct KnownHttpHeaderIndexComparer : IComparer<KnownHttpHeader>
         {
@@ -45,7 +45,7 @@ namespace Concoct.Web
                 {HttpWorkerRequest.HeaderContentLength,"Content-Length" },
                 {HttpWorkerRequest.HeaderContentLocation,"Content-Location" },
                 {HttpWorkerRequest.HeaderContentMd5,"Content-MD5" },
-                {HttpWorkerRequest.HeaderContentRange 	,"Content-Range 	" },
+                {HttpWorkerRequest.HeaderContentRange 	,"Content-Range" },
                 {HttpWorkerRequest.HeaderContentType ,"Content-Type" },
                 {HttpWorkerRequest.HeaderCookie,"Cookie" },
                 {HttpWorkerRequest.HeaderDate ,"Date" },
