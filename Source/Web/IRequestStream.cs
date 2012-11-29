@@ -5,7 +5,7 @@ namespace Concoct.Web
     public interface IRequestStream 
     {
         string ContentType { get; }
-        long ContentLength64 { get; }
+        int ContentLength { get; }
         Stream InputStream { get; }
     }
 }

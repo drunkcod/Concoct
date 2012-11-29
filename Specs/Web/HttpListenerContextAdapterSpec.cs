@@ -6,10 +6,12 @@ namespace Concoct.Web
     [Describe(typeof(HttpListenerContextAdapter))]
     public class HttpListenerContextAdapterSpec
     {
-        [Row("http://example.com/foo", "~/")]
-        public void MakeRelativeUriFunc(string request, string expected) {
+        [Row("http://example.com/foo", "/foo", "~/")
+        ,Row("http://example.com/foo/", "/foo", "~/")
+		,Row("http://example.com/foo/bar", "/foo", "~/bar")]
+        public void MakeRelativeUriFunc(string request, string vpath, string expected) {
             var baseUrl = new Uri("http://example.com");
-            var makeRelative = HttpListenerContextAdapter.MakeRelativeUriFunc(baseUrl, "/foo");
+            var makeRelative = HttpListenerContextAdapter.MakeRelativeUriFunc(baseUrl, vpath);
             
             Verify.That(() => makeRelative(new Uri(request)) == expected);
         }

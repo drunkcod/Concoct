@@ -28,7 +28,7 @@ namespace Concoct.Web
 
         public MemoryStream Data { get { return data; } }
 
-        public long ContentLength64 { get { return data.Length; } }
+        public int ContentLength { get { return (int)data.Length; } }
 
         public Stream InputStream { get { return Data; } }
 

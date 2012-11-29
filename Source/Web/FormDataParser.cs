@@ -11,17 +11,15 @@ namespace Concoct.Web
 {
     class RequestStream : IRequestStream
     {
-        readonly HttpListenerRequest request;
-
-        public RequestStream(string contentType, long length, Stream inputStream) {
+        public RequestStream(string contentType, int length, Stream inputStream) {
 			ContentType = contentType;
-			ContentLength64 = length;
+			ContentLength = length;
 			InputStream = inputStream;
         }
 
         public string ContentType { get; private set; }
 
-        public long ContentLength64 { get; private set; }
+        public int ContentLength { get; private set; }
 
         public Stream InputStream { get; private set; }
     }
@@ -80,11 +78,11 @@ namespace Concoct.Web
                 else
                     fields.Add(name, e.Part.GetBodyText(Encoding.UTF8));
             };
-            multiPartStream.Read(request.InputStream, (int)request.ContentLength64);
+            multiPartStream.Read(request.InputStream, request.ContentLength);
         }
 
         void WithBodyBytes(IRequestStream request, Action<byte[], int> action) {
-            var bytes = new byte[request.ContentLength64];
+            var bytes = new byte[request.ContentLength];
             action(bytes, request.InputStream.ReadBlock(bytes, 0, bytes.Length));
         }
 

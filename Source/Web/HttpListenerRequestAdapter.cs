@@ -50,40 +50,35 @@ namespace Concoct.Web
 				if(inputStream == null) {
 					inputStream = new MemoryStream();
 					request.InputStream.CopyTo(inputStream);
+					RewindInputStream();
 				}
 				return inputStream; 
 			} 
 		}
 
-        public override NameValueCollection Form {
-            get {
-                ParseFormAndFiles();
-                return formParser.Fields;
-            }
-        }
-
+        public override NameValueCollection Form { get { return ParseFormAndFiles().Fields; } }
         public override Uri Url { get {return request.Url; } }
         public override NameValueCollection QueryString { get { return request.QueryString; } }
-        public override HttpFileCollectionBase Files { 
-            get {
-                ParseFormAndFiles();
-                return formParser.Files; 
-            } 
-        }
+        public override HttpFileCollectionBase Files { get { return ParseFormAndFiles().Files; } }
         public override NameValueCollection Headers { get { return request.Headers; } }
         public override NameValueCollection ServerVariables { get { return serverVariables; } }
         public override void ValidateInput() { }
 
-		public override string this[string key]
-		{
+		public override string this[string key] {
 			get { throw new NotSupportedException(); }
 		}
 
-        public void ParseFormAndFiles() {
-            if(formParser.HasResult) return;
-            formParser.ParseFormAndFiles(new RequestStream(ContentType, ContentLength, InputStream));
-			InputStream.Seek(0, SeekOrigin.Begin);
+        public FormDataParser ParseFormAndFiles() {
+            if(!formParser.HasResult) {
+				formParser.ParseFormAndFiles(new RequestStream(ContentType, ContentLength, InputStream));
+				RewindInputStream();
+			}
+			return formParser;
+			
         }
 
+		private void RewindInputStream() {
+			InputStream.Seek(0, SeekOrigin.Begin);
+		}
     }
 }

@@ -7,15 +7,15 @@ namespace Concoct.Web
 {
     class HttpListenerResponseAdapter : HttpResponseBase
     {
-		static Encoding DefaultEncoding = new UTF8Encoding(false);
+		static readonly Encoding DefaultEncoding = new UTF8Encoding(false);
         readonly HttpListenerResponse response;
         readonly MemoryStream outputStream;
         TextWriter output;
 
+		public HttpContext Context;
+
         public HttpListenerResponseAdapter(HttpListenerResponse response) {
             this.response = response;
-            //this.response.ContentType = "text/html";
-            //this.response.ContentEncoding = DefaultEncoding;
             this.outputStream = new MemoryStream();
         }
 
@@ -43,8 +43,9 @@ namespace Concoct.Web
 
         public override string ContentType {
             get { return response.ContentType; }
-            set { 
+            set {
 				response.ContentType = value;
+				if(Context != null) Context.Response.ContentType = value;
 			}
         }
 
@@ -57,7 +58,7 @@ namespace Concoct.Web
             get { return output ?? (output = new StreamWriter(OutputStream, ContentEncoding)); }
         }
 
-        public override Stream OutputStream { get {return outputStream; } }
+        public override Stream OutputStream { get { return outputStream; } }
 
         public override string ApplyAppPathModifier(string virtualPath) {
             return virtualPath;

@@ -13,8 +13,7 @@ namespace Concoct.Web
         {
             readonly HttpListenerContextAdapter context;
 
-            public HttpListenerWorkerRequest(HttpListenerContextAdapter context)
-            {
+            public HttpListenerWorkerRequest(HttpListenerContextAdapter context) {
                 this.context = context;
             }
 
@@ -94,7 +93,7 @@ namespace Concoct.Web
 				switch(index) {
 					case HttpWorkerRequest.HeaderContentType: Response.ContentType = value; break;
 					default: SendUnknownResponseHeader(KnownHttpHeaders.FxHeaders[index], value); break;
-				}
+				}				
             }
 
             public override void SendResponseFromFile(IntPtr handle, long offset, long length)
@@ -152,7 +151,7 @@ namespace Concoct.Web
 		readonly HttpSessionStateBase session;
 
         public HttpListenerContextAdapter(HttpListenerContext context, string virtualPath, string physicalPath) {
-            this.request = new HttpListenerRequestAdapter(context.Request, virtualPath, MakeRelativeUriFunc(context.Request.Url, virtualPath));
+			this.request = new HttpListenerRequestAdapter(context.Request, virtualPath, MakeRelativeUriFunc(context.Request.Url, virtualPath));
             this.response = new HttpListenerResponseAdapter(context.Response);
             this.server = new ConcoctHttpServerUtility(physicalPath);
             this.cache = new Cache();
@@ -167,38 +166,32 @@ namespace Concoct.Web
         public override Cache Cache { get { return cache; } }
 		public SessionStateBehavior SessionStateBehavior { get; private set; }
 
-		public override void SetSessionStateBehavior(SessionStateBehavior sessionStateBehavior)
-		{ 
+		public override void SetSessionStateBehavior(SessionStateBehavior sessionStateBehavior) { 
 			SessionStateBehavior = sessionStateBehavior;
 		}
 
-        public void AsHttpContext(Action<HttpContext> action, bool alignResponses)
+        public void AsActiveHttpContext(Action<HttpContext> action)
         {
-            var worker = new HttpListenerWorkerRequest(this);
-            var context = new HttpContext(worker);
-			HttpContext.Current = context;
+			var worker = new HttpListenerWorkerRequest(this);
             try {
-                action(context);
+				response.Context = new HttpContext(worker);
+				HttpContext.Current = response.Context;
+                action(HttpContext.Current);
             } finally {
-				if(alignResponses)
-					AlignResponses(context);
-                context.Response.Flush();
+                HttpContext.Current.Response.Flush();
 				HttpContext.Current = null;
+				response.Context = null;
             }
         }
 
-		private void AlignResponses(HttpContext context) {
-			context.Response.ContentType = response.ContentType ;
-		}
-
         public static Func<Uri,string> MakeRelativeUriFunc(Uri request, string virtualPath){
-            var baseUri = new Uri(string.Format("{0}://{1}:{2}{3}{4}", 
+            var skip = new Uri(string.Format("{0}://{1}:{2}{3}{4}", 
                 request.Scheme, 
                 request.Host,
                 request.Port,
                 virtualPath.StartsWith("/") ? string.Empty : "/",
-                virtualPath));
-            return uri => "~/" + baseUri.MakeRelativeUri(uri);
+                virtualPath)).ToString().Length;
+            return uri => "~/" + uri.ToString().Substring(skip).TrimStart('/');
         }
     }
 }

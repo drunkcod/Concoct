@@ -41,18 +41,20 @@ namespace Concoct
         public event EventHandler<MvcRequestHandlerEventArgs> BeginRequest;
 
         public void Process(HttpListenerContext context) {
-            var httpContext = new HttpListenerContextAdapter(context, virtualPath, physicalPath);
+            var listenerContext = new HttpListenerContextAdapter(context, virtualPath, physicalPath);
             try {
-                var data = GetRouteData(httpContext);
-                var request = new RequestContext(httpContext, data);
-                var handler = data.RouteHandler.GetHttpHandler(request);
-                BeginRequest.Raise(this, new MvcRequestHandlerEventArgs(httpContext));
-                httpContext.AsHttpContext(handler.ProcessRequest, true);
+                BeginRequest.Raise(this, new MvcRequestHandlerEventArgs(listenerContext));
+                listenerContext.AsActiveHttpContext(httpContext => {
+					var data = GetRouteData(listenerContext);
+					var request = new RequestContext(listenerContext, data);
+					var handler = data.RouteHandler.GetHttpHandler(request);
+					handler.ProcessRequest(httpContext);
+				});
             } catch (Exception e) {
-                httpContext.Response.StatusCode = 500;
-                httpContext.Response.Write(ErrorFormatter.Format(e));
+                listenerContext.Response.StatusCode = 500;
+                listenerContext.Response.Write(ErrorFormatter.Format(e));
             }
-            httpContext.Response.End();
+            listenerContext.Response.End();
         }
 
         public RouteData GetRouteData(HttpContextBase httpContext) {

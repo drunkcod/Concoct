@@ -15,8 +15,10 @@ namespace Concoct.Web
         }
     }
 
-    public class KnownHttpHeaders : IEnumerable<KnownHttpHeader>
+    public class KnownHttpHeaders
     {
+		public const string ContentType = "Content-Type";
+
         struct KnownHttpHeaderIndexComparer : IComparer<KnownHttpHeader>
         {
             public int Compare(KnownHttpHeader x, KnownHttpHeader y) {
@@ -24,92 +26,77 @@ namespace Concoct.Web
             }
         }
 
-
-        readonly List<KnownHttpHeader> headers;
+		readonly List<KnownHttpHeader> headers;
         readonly IComparer<KnownHttpHeader> comparer = new KnownHttpHeaderIndexComparer();
         readonly bool isReadonly;
 
-        public static KnownHttpHeaders FxHeaders = new KnownHttpHeaders {
-                {HttpWorkerRequest.HeaderAccept,"Accept" },
-                {HttpWorkerRequest.HeaderAcceptCharset,"Accept-Charset" },
-                {HttpWorkerRequest.HeaderAcceptEncoding,"Accept-Encoding" },
-                {HttpWorkerRequest.HeaderAcceptLanguage,"Accept-Language" },
-                {HttpWorkerRequest.HeaderAcceptRanges,"Accept-Ranges" },
-                {HttpWorkerRequest.HeaderAge,"Age" },
-                {HttpWorkerRequest.HeaderAllow 	,"Allow" },
-                {HttpWorkerRequest.HeaderAuthorization,"Authorization" },
-                {HttpWorkerRequest.HeaderCacheControl,"Cache-Control" },
-                {HttpWorkerRequest.HeaderConnection,"Connection" },
-                {HttpWorkerRequest.HeaderContentEncoding,"Content-Encoding" },
-                {HttpWorkerRequest.HeaderContentLanguage,"Content-Language" },
-                {HttpWorkerRequest.HeaderContentLength,"Content-Length" },
-                {HttpWorkerRequest.HeaderContentLocation,"Content-Location" },
-                {HttpWorkerRequest.HeaderContentMd5,"Content-MD5" },
-                {HttpWorkerRequest.HeaderContentRange 	,"Content-Range" },
-                {HttpWorkerRequest.HeaderContentType ,"Content-Type" },
-                {HttpWorkerRequest.HeaderCookie,"Cookie" },
-                {HttpWorkerRequest.HeaderDate ,"Date" },
-                {HttpWorkerRequest.HeaderEtag,"ETag" },
-                {HttpWorkerRequest.HeaderExpect,"Except" },
-                {HttpWorkerRequest.HeaderExpires,"Expires" },
-                {HttpWorkerRequest.HeaderFrom ,"From" },
-                {HttpWorkerRequest.HeaderHost,"Host" },
-                {HttpWorkerRequest.HeaderIfMatch,"If-Match" },
-                {HttpWorkerRequest.HeaderIfModifiedSince,"If-Modified-Since" },
-                {HttpWorkerRequest.HeaderIfNoneMatch,"If-None-Match" },
-                {HttpWorkerRequest.HeaderIfRange ,"If-Range" },
-                {HttpWorkerRequest.HeaderIfUnmodifiedSince ,"If-Unmodified-Since" },
-                {HttpWorkerRequest.HeaderKeepAlive ,"Keep-Alive" },
-                {HttpWorkerRequest.HeaderLastModified,"Last-Modified" },
-                {HttpWorkerRequest.HeaderLocation,"Location" },
-                {HttpWorkerRequest.HeaderMaxForwards ,"Max-Forwards" },
-                {HttpWorkerRequest.HeaderPragma ,"Pragma" },
-                {HttpWorkerRequest.HeaderProxyAuthenticate ,"Proxy-Authenticate" },
-                {HttpWorkerRequest.HeaderProxyAuthorization ,"Proxy-Authorization" },
-                {HttpWorkerRequest.HeaderRange ,"Range" },
-                {HttpWorkerRequest.HeaderReferer,"Referer" },
-                {HttpWorkerRequest.HeaderRetryAfter ,"Retry-After" },
-                {HttpWorkerRequest.HeaderServer ,"Server" },
-                {HttpWorkerRequest.HeaderSetCookie ,"Set-Cookie" },
-                {HttpWorkerRequest.HeaderTe ,"TE" },
-                {HttpWorkerRequest.HeaderTrailer ,"Trailer" },
-                {HttpWorkerRequest.HeaderTransferEncoding ,"Transfer-Encoding" },
-                {HttpWorkerRequest.HeaderUpgrade ,"Upgrade" },
-                {HttpWorkerRequest.HeaderUserAgent ,"User-Agent" },
-                {HttpWorkerRequest.HeaderVary,"Vary" },
-                {HttpWorkerRequest.HeaderVia ,"Via" },
-                {HttpWorkerRequest.HeaderWarning ,"Warning" },
-                {HttpWorkerRequest.HeaderWwwAuthenticate ,"WWW-Authenticate" },
-            }.AsReadonly();
+        public static KnownHttpHeaders FxHeaders = new KnownHttpHeaders(new List<KnownHttpHeader> {
+                Header(HttpWorkerRequest.HeaderAccept, "Accept"),
+                Header(HttpWorkerRequest.HeaderAcceptCharset, "Accept-Charset"),
+                Header(HttpWorkerRequest.HeaderAcceptEncoding, "Accept-Encoding"),
+                Header(HttpWorkerRequest.HeaderAcceptLanguage, "Accept-Language"),
+                Header(HttpWorkerRequest.HeaderAcceptRanges, "Accept-Ranges"),
+                Header(HttpWorkerRequest.HeaderAge, "Age"),
+                Header(HttpWorkerRequest.HeaderAllow, "Allow"),
+                Header(HttpWorkerRequest.HeaderAuthorization, "Authorization"),
+                Header(HttpWorkerRequest.HeaderCacheControl, "Cache-Control"),
+                Header(HttpWorkerRequest.HeaderConnection, "Connection"),
+                Header(HttpWorkerRequest.HeaderContentEncoding, "Content-Encoding"),
+                Header(HttpWorkerRequest.HeaderContentLanguage, "Content-Language"),
+                Header(HttpWorkerRequest.HeaderContentLength, "Content-Length"),
+                Header(HttpWorkerRequest.HeaderContentLocation, "Content-Location"),
+                Header(HttpWorkerRequest.HeaderContentMd5, "Content-MD5"),
+                Header(HttpWorkerRequest.HeaderContentRange, "Content-Range"),
+                Header(HttpWorkerRequest.HeaderContentType, ContentType),
+                Header(HttpWorkerRequest.HeaderCookie, "Cookie"),
+                Header(HttpWorkerRequest.HeaderDate, "Date"),
+                Header(HttpWorkerRequest.HeaderEtag, "ETag"),
+                Header(HttpWorkerRequest.HeaderExpect, "Except"),
+                Header(HttpWorkerRequest.HeaderExpires, "Expires"),
+                Header(HttpWorkerRequest.HeaderFrom, "From"),
+                Header(HttpWorkerRequest.HeaderHost,"Host"),
+                Header(HttpWorkerRequest.HeaderIfMatch,"If-Match"),
+                Header(HttpWorkerRequest.HeaderIfModifiedSince,"If-Modified-Since"),
+                Header(HttpWorkerRequest.HeaderIfNoneMatch,"If-None-Match"),
+                Header(HttpWorkerRequest.HeaderIfRange ,"If-Range"),
+                Header(HttpWorkerRequest.HeaderIfUnmodifiedSince ,"If-Unmodified-Since"),
+                Header(HttpWorkerRequest.HeaderKeepAlive ,"Keep-Alive"),
+                Header(HttpWorkerRequest.HeaderLastModified,"Last-Modified"),
+                Header(HttpWorkerRequest.HeaderLocation,"Location"),
+                Header(HttpWorkerRequest.HeaderMaxForwards ,"Max-Forwards"),
+                Header(HttpWorkerRequest.HeaderPragma ,"Pragma"),
+                Header(HttpWorkerRequest.HeaderProxyAuthenticate ,"Proxy-Authenticate"),
+                Header(HttpWorkerRequest.HeaderProxyAuthorization ,"Proxy-Authorization"),
+                Header(HttpWorkerRequest.HeaderRange ,"Range"),
+                Header(HttpWorkerRequest.HeaderReferer,"Referer"),
+                Header(HttpWorkerRequest.HeaderRetryAfter,"Retry-After"),
+                Header(HttpWorkerRequest.HeaderServer, "Server"),
+                Header(HttpWorkerRequest.HeaderSetCookie, "Set-Cookie"),
+                Header(HttpWorkerRequest.HeaderTe, "TE"),
+                Header(HttpWorkerRequest.HeaderTrailer, "Trailer"),
+                Header(HttpWorkerRequest.HeaderTransferEncoding, "Transfer-Encoding"),
+                Header(HttpWorkerRequest.HeaderUpgrade, "Upgrade"),
+                Header(HttpWorkerRequest.HeaderUserAgent, "User-Agent"),
+                Header(HttpWorkerRequest.HeaderVary, "Vary"),
+                Header(HttpWorkerRequest.HeaderVia, "Via"),
+                Header(HttpWorkerRequest.HeaderWarning, "Warning"),
+                Header(HttpWorkerRequest.HeaderWwwAuthenticate, "WWW-Authenticate"),
+            }, true);
+
+		static KnownHttpHeader Header(int index, string name) {
+			return new KnownHttpHeader(index, name);
+		}
 
         KnownHttpHeaders(List<KnownHttpHeader> headers, bool isReadonly) { 
             this.headers = headers; 
+			this.headers.Sort(comparer);
             this.isReadonly = isReadonly;
-        }
-
-        public KnownHttpHeaders() : this(new List<KnownHttpHeader>(), false) { }
-
-        public void Add(int index, string header) {
-            if(isReadonly)
-                throw new InvalidOperationException("I'm readonly.");
-            headers.Add(new KnownHttpHeader(index, header));
-            headers.Sort(comparer);
         }
 
         public string this[int index] {
             get {
                 return headers[headers.BinarySearch(new KnownHttpHeader(index, string.Empty), comparer)].Header;
             }
-        }
-
-        KnownHttpHeaders AsReadonly() { return new KnownHttpHeaders(headers, true); }
-
-        public IEnumerator<KnownHttpHeader> GetEnumerator() {
-            return headers.GetEnumerator();
-        }
-
-        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() {
-            return headers.GetEnumerator();
         }
     }
 }
